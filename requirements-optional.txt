@@ -1,0 +1,5 @@
+# Optional MCP facade
+mcp>=1.12,<2
+
+# Optional language-understanding and drafting extension point
+openai-agents>=0.7,<1
