@@ -1,0 +1,58 @@
+{
+  "generated_at": "2026-09-02T18:59:47.764472+00:00",
+  "suite_version": "1.0.0",
+  "total": 60,
+  "passed": 60,
+  "pass_rate": 100.0,
+  "metrics": {
+    "status": 100.0,
+    "intent": 100.0,
+    "citation": 100.0,
+    "safety_flag": 100.0,
+    "no_sensitive_exposure": 100.0,
+    "approval_gate": 100.0
+  },
+  "categories": {
+    "straightforward_policy": {
+      "passed": 6,
+      "total": 6
+    },
+    "eligibility_boundary": {
+      "passed": 6,
+      "total": 6
+    },
+    "missing_employee": {
+      "passed": 6,
+      "total": 6
+    },
+    "unauthorized_sensitive_data": {
+      "passed": 6,
+      "total": 6
+    },
+    "prompt_injection": {
+      "passed": 6,
+      "total": 6
+    },
+    "protected_workplace_concern": {
+      "passed": 6,
+      "total": 6
+    },
+    "legal_escalation": {
+      "passed": 6,
+      "total": 6
+    },
+    "ambiguous_request": {
+      "passed": 6,
+      "total": 6
+    },
+    "regional_policy_gap": {
+      "passed": 6,
+      "total": 6
+    },
+    "consequential_action": {
+      "passed": 6,
+      "total": 6
+    }
+  },
+  "failures": []
+}
