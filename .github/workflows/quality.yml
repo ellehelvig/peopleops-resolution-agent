@@ -1,0 +1,38 @@
+name: Quality
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test-and-evaluate:
+    name: Tests and evaluation baseline
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+
+      - name: Compile
+        run: python -m compileall -q peopleops evals server.py mcp_server.py
+
+      - name: Unit and contract tests
+        run: python -m unittest discover -s tests -v
+
+      - name: Evaluation baseline (60 cases, must match committed report)
+        run: |
+          python - <<'PY'
+          import json
+          from evals.run import evaluate
+          fresh = evaluate()
+          committed = json.load(open("evals/latest_report.json"))
+          print(f"{fresh['passed']}/{fresh['total']} passed ({fresh['pass_rate']}%)")
+          assert fresh["failures"] == [], fresh["failures"]
+          for key in ("total", "passed", "categories", "metrics"):
+              assert fresh[key] == committed[key], f"{key} drifted: regenerate evals/latest_report.json and commit it"
+          PY

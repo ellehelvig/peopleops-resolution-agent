@@ -57,6 +57,13 @@ class Handler(BaseHTTPRequestHandler):
         if path == "/api/health":
             self._json({"status": "ok", "mode": "deterministic", "synthetic_data": True})
             return
+        if path == "/api/evaluation":
+            report = ROOT / "evals" / "latest_report.json"
+            if not report.is_file():
+                self._json({"error": "No evaluation report. Run: python3 -m evals.run"}, 404)
+                return
+            self._json(json.loads(report.read_text()))
+            return
         target = WEB / ("index.html" if path == "/" else path.lstrip("/"))
         if not target.is_file() or WEB not in target.resolve().parents:
             self.send_error(404)

@@ -2,7 +2,7 @@
 
 A portfolio-grade reference implementation of a governed HR agent that carries a synthetic employee request from intake to a grounded recommendation, human approval, audit trail, and operating metrics.
 
-![Python](https://img.shields.io/badge/Python-3.11%2B-17362d) ![Tests](https://img.shields.io/badge/evals-60%20cases-d8f171) ![Data](https://img.shields.io/badge/data-synthetic-7aa894)
+[![Quality](https://github.com/ellehelvig/peopleops-resolution-agent/actions/workflows/quality.yml/badge.svg)](https://github.com/ellehelvig/peopleops-resolution-agent/actions/workflows/quality.yml) ![Python](https://img.shields.io/badge/Python-3.11%2B-17362d) ![Tests](https://img.shields.io/badge/tests-31%20unit%20%2B%2060%20evals-d8f171) ![Data](https://img.shields.io/badge/data-synthetic-7aa894)
 
 ## What works
 
@@ -38,11 +38,11 @@ Open [http://127.0.0.1:8765](http://127.0.0.1:8765). Try the example prompts, th
 Run the tests and evaluation baseline:
 
 ```bash
-python3 -m unittest discover -s tests -v
-python3 -m evals.run
+python3 -m unittest discover -s tests -v   # 31 workflow, safety, privacy, HTTP contract, and eval-regression tests
+python3 -m evals.run                        # 60 cases across ten risk categories
 ```
 
-The evaluation command writes `evals/latest_report.json`. Results are evidence about this deterministic baseline, not claims about an untested LLM configuration.
+The evaluation command writes `evals/latest_report.json`. That file is committed on purpose: CI recomputes the baseline and fails if the committed report no longer matches the engine, so the evidence can't drift from the code. Results are evidence about this deterministic baseline, not claims about an untested LLM configuration.
 
 ## Architecture
 
@@ -76,27 +76,8 @@ The default engine is deterministic so every policy and safety decision can be r
 | `.github/workflows/quality.yml` | Tests and evaluation on every push and pull request |
 | `web/` | Responsive intake, approval, operations, and governance UI |
 | `evals/` | 60 cases across ten risk categories and report generator |
-| `tests/` | Workflow, privacy, approval, and evaluation regression tests |
+| `tests/` | 31 tests: engine workflows and safety gates, HTTP contract (including path traversal and input limits), and evaluation-report drift |
 | `docs/` | Architecture, governance, evaluation, pilot, roadmap, and case study |
-
-## Publish the portfolio version
-
-Create a public GitHub repository with this directory as its root. Before sharing it, add a concise repository description, the topics `responsible-ai`, `hr-tech`, `mcp`, `agent-evaluation`, and `human-in-the-loop`, plus a social-preview image showing the decision record or operations dashboard.
-
-Deploy the working application on Render:
-
-1. In Render, choose **New → Blueprint** and connect the GitHub repository.
-2. Render detects `render.yaml`, runs the full quality gate, and starts the web service.
-3. Confirm `/api/health` returns `{"status":"ok", ...}`.
-4. Add the Render URL to the GitHub repository website field and near the top of this README.
-
-The free Render instance sleeps when idle and its in-memory case changes reset after a restart. That is intentional for a synthetic demo, but wake it before an interview and keep the recorded walkthrough as a fallback. No API key or real employee data is needed.
-
-Recommended link hierarchy:
-
-- Portfolio or LinkedIn feature: executive story, demo video, and measured evidence.
-- Live Render application: interactive product walkthrough.
-- GitHub repository: implementation, tests, evaluation report, and governance artifacts.
 
 ## Production path
 
