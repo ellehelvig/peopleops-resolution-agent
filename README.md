@@ -33,7 +33,7 @@ cd peopleops-resolution-agent
 python3 server.py
 ```
 
-Open [http://127.0.0.1:8765](http://127.0.0.1:8765). Try the example prompts, then review the approval queue, operations view, and governance controls.
+Open the [live demo](https://peopleops-resolution-agent.onrender.com). To use the local version instead, open [http://127.0.0.1:8765](http://127.0.0.1:8765) after starting the server. Try the example prompts, then review the approval queue, operations view, and governance controls.
 
 Run the tests and evaluation baseline:
 
