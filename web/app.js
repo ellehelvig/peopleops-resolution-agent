@@ -152,7 +152,7 @@
     try {
       await api('/api/cases/' + encodeURIComponent(caseId) + '/decision', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ decision: decision, reviewer: $('reviewer').value || 'People Partner', note: note || '' })
+        body: JSON.stringify({ decision: decision, reviewer: $('reviewer').value.trim(), note: note || '' })
       });
       await refresh();
     } catch (err) {

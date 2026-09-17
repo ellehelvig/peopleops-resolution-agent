@@ -116,13 +116,14 @@ class ResolutionEngine:
                 "Prepare a non-binding request for manager and People Partner review.", True, "manager_and_people_partner", citations, trace, ["employee_record:eligibility_fields"], started, [])
 
         if intent == "relocation":
-            cross_border = any(country in normalized for country in ("canada", "uk", "united kingdom", "germany", "india", "mexico", "france", "japan")) or "country" in normalized
-            risk = "critical" if cross_border else "high"
-            role = "mobility_and_legal" if cross_border else "people_partner"
-            answer = "Relocation is not automatic. It requires business sponsorship and People Partner review." + (" Because this may be cross-border, Mobility, tax, and immigration review are also required before any commitment." if cross_border else "")
-            trace.append("Classified relocation scope; made no compensation, tax, or immigration commitment.")
-            return self._finish(case_id, "waiting_approval", intent, risk, confidence, answer,
-                "Open a relocation assessment with the required reviewers.", True, role, citations, trace, ["employee_record:eligibility_fields"], started, [])
+            # Free text is not a verified destination. Absence from a country
+            # keyword list cannot establish that a move is domestic.
+            answer = ("Relocation is not automatic. I have not verified the destination or whether this move is domestic or cross-border. "
+                      "Mobility and Legal must confirm the scope and any tax or immigration review, alongside business sponsorship and People Partner review, before any commitment.")
+            trace.append("Relocation scope is unverified; routed to Mobility and Legal without assuming a domestic move.")
+            return self._finish(case_id, "waiting_approval", intent, "critical", confidence, answer,
+                "Confirm the destination country and work location with Mobility and Legal; prepare an assessment, not an approval.",
+                True, "mobility_and_legal", citations, trace, ["employee_record:eligibility_fields"], started, ["relocation_scope_unverified"])
 
         trace.append("Reporting-line changes are consequential and cannot be executed by the agent.")
         return self._finish(case_id, "waiting_approval", intent, "high", confidence,

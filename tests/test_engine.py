@@ -102,10 +102,25 @@ class WorkflowTests(unittest.TestCase):
         self.assertEqual(result["risk"], "critical")
         self.assertEqual(result["approval_role"], "mobility_and_legal")
 
-    def test_domestic_relocation_routes_to_people_partner(self) -> None:
+    def test_apparently_domestic_move_still_requires_scope_verification(self) -> None:
         result = self.engine.resolve("I want to relocate from Chicago to Denver.", "E-1001")
-        self.assertEqual(result["risk"], "high")
-        self.assertEqual(result["approval_role"], "people_partner")
+        self.assertEqual(result["risk"], "critical")
+        self.assertEqual(result["approval_role"], "mobility_and_legal")
+        self.assertIn("relocation_scope_unverified", result["safety_flags"])
+
+    def test_unlisted_destinations_cannot_skip_specialist_review(self) -> None:
+        for destination in ("Australia", "Brazil", "Singapore", "Sydney", "another country"):
+            with self.subTest(destination=destination):
+                result = self.engine.resolve(f"I want to relocate to {destination}.", "E-1001")
+                self.assertEqual(result["approval_role"], "mobility_and_legal")
+                self.assertEqual(result["status"], "waiting_approval")
+                self.assertTrue(result["approval_required"])
+                self.assertIn("relocation_scope_unverified", result["safety_flags"])
+
+    def test_missing_relocation_destination_is_not_assumed_domestic(self) -> None:
+        result = self.engine.resolve("I want to relocate.", "E-1001")
+        self.assertEqual(result["approval_role"], "mobility_and_legal")
+        self.assertIn("Confirm the destination country", result["recommended_action"])
 
     def test_manager_change_cannot_be_executed_by_agent(self) -> None:
         result = self.engine.resolve("How do I request a manager change?", "E-1001")
