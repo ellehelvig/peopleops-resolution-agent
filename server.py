@@ -41,9 +41,19 @@ class Handler(BaseHTTPRequestHandler):
 
     def _body(self) -> dict:
         length = int(self.headers.get("Content-Length", "0"))
-        if length > 16_384:
-            raise ValueError("Request body exceeds 16 KB.")
-        return json.loads(self.rfile.read(length) or b"{}")
+        if not 0 <= length <= 16_384:
+            raise ValueError("Request body length must be between 0 and 16 KB.")
+        payload = json.loads(self.rfile.read(length) or b"{}")
+        if not isinstance(payload, dict):
+            raise ValueError("Request body must be a JSON object.")
+        return payload
+
+    @staticmethod
+    def _text(payload: dict, field: str, default: str = "") -> str:
+        value = payload.get(field, default)
+        if not isinstance(value, str):
+            raise ValueError(f"{field} must be a string.")
+        return value.strip()
 
     def do_GET(self) -> None:
         path = urlparse(self.path).path
@@ -84,20 +94,20 @@ class Handler(BaseHTTPRequestHandler):
         try:
             payload = self._body()
             if path == "/api/resolve":
-                request = str(payload.get("request", "")).strip()
+                request = self._text(payload, "request")
                 if not request or len(request) > 4000:
                     self._json({"error": "Request must be between 1 and 4,000 characters."}, 400)
                     return
-                result = ENGINE.resolve(request, str(payload.get("employee_id", "")), str(payload.get("actor_role", "employee")))
+                result = ENGINE.resolve(request, self._text(payload, "employee_id"), self._text(payload, "actor_role", "employee"))
                 self._json(STORE.save(result))
                 return
             if path.startswith("/api/cases/") and path.endswith("/decision"):
                 case_id = path.split("/")[3]
-                decision = payload.get("decision")
+                decision = self._text(payload, "decision")
                 if decision not in {"approve", "reject"}:
                     self._json({"error": "Decision must be approve or reject."}, 400)
                     return
-                row = STORE.decide(case_id, decision, str(payload.get("reviewer", "People Partner")), str(payload.get("note", "")))
+                row = STORE.decide(case_id, decision, self._text(payload, "reviewer"), self._text(payload, "note"))
                 self._json(row or {"error": "Case not found."}, 200 if row else 404)
                 return
             self._json({"error": "Not found."}, 404)

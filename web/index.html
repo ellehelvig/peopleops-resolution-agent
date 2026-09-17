@@ -97,10 +97,10 @@
     <section class="view" id="view-approvals">
       <div class="card">
         <h2>Approval queue</h2>
-        <p class="muted">The agent prepares. A named person decides. Nothing here writes to an HRIS; approving records a human decision in the audit log.</p>
+        <p class="muted">Enter a reviewer name to record a demo decision. Reviewer identities are self-reported, not authenticated. Nothing here writes to an HRIS.</p>
         <label class="field inline">
           <span>Reviewing as</span>
-          <input id="reviewer" value="People Partner (demo)">
+          <input id="reviewer" placeholder="Reviewer name (demo)" required>
         </label>
         <div id="queue"></div>
       </div>

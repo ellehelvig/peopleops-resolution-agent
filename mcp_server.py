@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Optional standards-based MCP facade over four narrow PeopleOps tools.
 
-Install `mcp` from requirements.txt, then run `python mcp_server.py`.
+Install requirements-optional.txt, then run `python mcp_server.py`.
 The UI does not require this dependency; both surfaces call the same domain layer.
 """
 
@@ -45,7 +45,10 @@ def record_approval(case_id: str, decision: str, reviewer: str, note: str = "") 
     """Record a named human decision. Call only after approval is received outside the agent."""
     if decision not in {"approve", "reject"}:
         return {"error": "invalid_decision"}
-    return store.decide(case_id, decision, reviewer, note) or {"error": "case_not_found"}
+    try:
+        return store.decide(case_id, decision, reviewer, note) or {"error": "case_not_found"}
+    except ValueError as exc:
+        return {"error": str(exc)}
 
 
 if __name__ == "__main__":

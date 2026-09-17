@@ -2,7 +2,7 @@
 
 A reference implementation of a governed HR agent that carries a synthetic employee request from intake to a grounded recommendation, human approval, audit trail, and operating metrics.
 
-[![Quality](https://github.com/ellehelvig/peopleops-resolution-agent/actions/workflows/quality.yml/badge.svg)](https://github.com/ellehelvig/peopleops-resolution-agent/actions/workflows/quality.yml) ![Python](https://img.shields.io/badge/Python-3.11%2B-17362d) ![Tests](https://img.shields.io/badge/tests-31%20unit%20%2B%2060%20evals-d8f171) ![Data](https://img.shields.io/badge/data-synthetic-7aa894)
+[![Quality](https://github.com/ellehelvig/peopleops-resolution-agent/actions/workflows/quality.yml/badge.svg)](https://github.com/ellehelvig/peopleops-resolution-agent/actions/workflows/quality.yml) ![Python](https://img.shields.io/badge/Python-3.11%2B-17362d) ![Tests](https://img.shields.io/badge/tests-42%20unit%20%2B%2060%20evals-d8f171) ![Data](https://img.shields.io/badge/data-synthetic-7aa894)
 
 ## What works
 
@@ -13,6 +13,8 @@ A reference implementation of a governed HR agent that carries a synthetic emplo
 - Human approval gates for every consequential recommendation.
 - Case ledger, audit events, operational metrics, and a 60-case repeatable evaluation suite.
 - Optional MCP server exposing four narrow tools with separate read and write responsibilities.
+
+Approval identities are self-reported in this demo. The store accepts a decision only for a pending case with a nonblank reviewer and rejects repeat decisions. This demonstrates workflow state, not authenticated human authorization.
 
 All people, policies, metrics, and case records are synthetic. This is a reference design, not legal or HR advice and not a production HR system.
 
@@ -38,7 +40,7 @@ Open the [live demo](https://peopleops-resolution-agent.onrender.com). To use th
 Run the tests and evaluation baseline:
 
 ```bash
-python3 -m unittest discover -s tests -v   # 31 workflow, safety, privacy, HTTP contract, and eval-regression tests
+python3 -m unittest discover -s tests -v   # 42 workflow, safety, privacy, HTTP contract, and eval-regression tests
 python3 -m evals.run                        # 60 cases across ten risk categories
 ```
 
@@ -76,7 +78,7 @@ The default engine is deterministic so every policy and safety decision can be r
 | `.github/workflows/quality.yml` | Tests and evaluation on every push and pull request |
 | `web/` | Responsive intake, approval, operations, and governance UI |
 | `evals/` | 60 cases across ten risk categories and report generator |
-| `tests/` | 31 tests: engine workflows and safety gates, HTTP contract (including path traversal and input limits), and evaluation-report drift |
+| `tests/` | 42 tests: engine workflows and safety gates, HTTP contract (including path traversal and input limits), and evaluation-report drift |
 | `docs/` | Architecture, governance, evaluation, pilot, roadmap, and case study |
 
 ## Production path
