@@ -2,7 +2,7 @@
 
 A reference implementation of a governed HR agent that carries a synthetic employee request from intake to a grounded recommendation, human approval, audit trail, and operating metrics.
 
-[![Quality](https://github.com/ellehelvig/peopleops-resolution-agent/actions/workflows/quality.yml/badge.svg)](https://github.com/ellehelvig/peopleops-resolution-agent/actions/workflows/quality.yml) ![Python](https://img.shields.io/badge/Python-3.11%2B-17362d) ![Tests](https://img.shields.io/badge/tests-42%20unit%20%2B%2060%20evals-d8f171) ![Data](https://img.shields.io/badge/data-synthetic-7aa894)
+[![Quality](https://github.com/ellehelvig/peopleops-resolution-agent/actions/workflows/quality.yml/badge.svg)](https://github.com/ellehelvig/peopleops-resolution-agent/actions/workflows/quality.yml) ![Python](https://img.shields.io/badge/Python-3.11%2B-17362d) ![Tests](https://img.shields.io/badge/tests-44%20unit%20%2B%2060%20evals-d8f171) ![Data](https://img.shields.io/badge/data-synthetic-7aa894)
 
 ## What works
 
@@ -11,6 +11,7 @@ A reference implementation of a governed HR agent that carries a synthetic emplo
 - Active-version and region-aware policy retrieval with citations.
 - Minimum-field employee lookup; names, compensation, medical, demographic, and contact data are excluded from the tool response.
 - Human approval gates for every consequential recommendation.
+- Relocation scope stays unverified until specialist review; a missing country keyword never establishes that a move is domestic.
 - Case ledger, audit events, operational metrics, and a 60-case repeatable evaluation suite.
 - Optional MCP server exposing four narrow tools with separate read and write responsibilities.
 
@@ -40,7 +41,7 @@ Open the [live demo](https://peopleops-resolution-agent.onrender.com). To use th
 Run the tests and evaluation baseline:
 
 ```bash
-python3 -m unittest discover -s tests -v   # 42 workflow, safety, privacy, HTTP contract, and eval-regression tests
+python3 -m unittest discover -s tests -v   # 44 workflow, safety, privacy, HTTP contract, and eval-regression tests
 python3 -m evals.run                        # 60 cases across ten risk categories
 ```
 
@@ -78,7 +79,7 @@ The default engine is deterministic so every policy and safety decision can be r
 | `.github/workflows/quality.yml` | Tests and evaluation on every push and pull request |
 | `web/` | Responsive intake, approval, operations, and governance UI |
 | `evals/` | 60 cases across ten risk categories and report generator |
-| `tests/` | 42 tests: engine workflows and safety gates, HTTP contract (including path traversal and input limits), and evaluation-report drift |
+| `tests/` | 44 tests: engine workflows and safety gates, HTTP contract (including path traversal and input limits), and evaluation-report drift |
 | `docs/` | Architecture, governance, evaluation, pilot, roadmap, and case study |
 
 ## Production path
