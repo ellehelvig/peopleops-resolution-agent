@@ -6,8 +6,11 @@ from __future__ import annotations
 import json
 import mimetypes
 import os
+import time
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
+from collections import defaultdict, deque
+from threading import Lock
 from urllib.parse import urlparse
 
 from peopleops.data import EMPLOYEES, POLICIES
@@ -18,6 +21,10 @@ ROOT = Path(__file__).resolve().parent
 WEB = ROOT / "web"
 ENGINE = ResolutionEngine()
 STORE = CaseStore()
+RATE_LIMIT_WINDOW_SECONDS = 60
+RATE_LIMIT_REQUESTS = 60
+RATE_LIMITS: dict[str, deque[float]] = defaultdict(deque)
+RATE_LIMIT_LOCK = Lock()
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -25,6 +32,23 @@ class Handler(BaseHTTPRequestHandler):
 
     def log_message(self, format: str, *args) -> None:
         return
+
+    def _client_key(self) -> str:
+        forwarded = self.headers.get("X-Forwarded-For", "")
+        return forwarded.split(",", 1)[0].strip() or self.client_address[0]
+
+    def _rate_limited(self) -> bool:
+        now = time.monotonic()
+        cutoff = now - RATE_LIMIT_WINDOW_SECONDS
+        key = self._client_key()
+        with RATE_LIMIT_LOCK:
+            requests = RATE_LIMITS[key]
+            while requests and requests[0] < cutoff:
+                requests.popleft()
+            if len(requests) >= RATE_LIMIT_REQUESTS:
+                return True
+            requests.append(now)
+            return False
 
     def _json(self, payload: object, status: int = 200) -> None:
         body = json.dumps(payload).encode()
@@ -36,6 +60,7 @@ class Handler(BaseHTTPRequestHandler):
         self.send_header("X-Frame-Options", "DENY")
         self.send_header("Referrer-Policy", "no-referrer")
         self.send_header("X-Synthetic-Data", "true")
+        self.send_header("Permissions-Policy", "camera=(), microphone=(), geolocation=()")
         self.end_headers()
         self.wfile.write(body)
 
@@ -56,6 +81,9 @@ class Handler(BaseHTTPRequestHandler):
         return value.strip()
 
     def do_GET(self) -> None:
+        if self._rate_limited():
+            self._json({"error": "Too many requests. Please try again shortly."}, 429)
+            return
         path = urlparse(self.path).path
         if path == "/api/bootstrap":
             self._json({
@@ -90,6 +118,13 @@ class Handler(BaseHTTPRequestHandler):
         self.wfile.write(body)
 
     def do_POST(self) -> None:
+        if self._rate_limited():
+            self._json({"error": "Too many requests. Please try again shortly."}, 429)
+            return
+        content_type = self.headers.get("Content-Type", "")
+        if "application/json" not in content_type.lower():
+            self._json({"error": "Content-Type must be application/json."}, 415)
+            return
         path = urlparse(self.path).path
         try:
             payload = self._body()
