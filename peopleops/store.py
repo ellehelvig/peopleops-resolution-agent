@@ -8,6 +8,9 @@ from threading import Lock
 
 from .data import SEED_CASES
 
+MAX_CASES = 250
+MAX_AUDIT_ENTRIES = 500
+
 
 class CaseStore:
     def __init__(self) -> None:
@@ -20,6 +23,9 @@ class CaseStore:
             row = deepcopy(result)
             row["created_at"] = datetime.now(timezone.utc).isoformat()
             self.cases[row["case_id"]] = row
+            while len(self.cases) > MAX_CASES:
+                oldest_id = next(iter(self.cases))
+                del self.cases[oldest_id]
             self._log(row["case_id"], actor, "resolution_created", {"status": row["status"], "sources": [c["policy_id"] for c in row["citations"]]})
             return deepcopy(row)
 
@@ -64,3 +70,5 @@ class CaseStore:
 
     def _log(self, case_id: str, actor: str, event: str, details: dict) -> None:
         self.audit.append({"timestamp": datetime.now(timezone.utc).isoformat(), "case_id": case_id, "actor": actor, "event": event, "details": details})
+        if len(self.audit) > MAX_AUDIT_ENTRIES:
+            del self.audit[:-MAX_AUDIT_ENTRIES]
