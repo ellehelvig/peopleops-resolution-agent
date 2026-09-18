@@ -121,6 +121,14 @@ class Handler(BaseHTTPRequestHandler):
         if self._rate_limited():
             self._json({"error": "Too many requests. Please try again shortly."}, 429)
             return
+        try:
+            declared_length = int(self.headers.get("Content-Length", "0"))
+        except ValueError:
+            self._json({"error": "Invalid Content-Length."}, 400)
+            return
+        if declared_length < 0 or declared_length > 16_384:
+            self._json({"error": "Request body length must be between 0 and 16 KB."}, 400)
+            return
         content_type = self.headers.get("Content-Type", "")
         if "application/json" not in content_type.lower():
             self._json({"error": "Content-Type must be application/json."}, 415)
