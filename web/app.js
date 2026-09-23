@@ -76,7 +76,7 @@
     var s = $('r-status'); s.textContent = label(r.status); s.className = statusClass(r.status);
     var k = $('r-risk'); k.textContent = 'risk: ' + r.risk; k.className = riskClass(r.risk);
     $('r-intent').textContent = 'intent: ' + label(r.intent);
-    $('r-confidence').textContent = 'confidence: ' + Math.round(r.confidence * 100) + '%';
+    $('r-basis').textContent = 'routed by: ' + r.routing_basis;
     $('r-answer').textContent = r.answer;
     $('r-action').textContent = r.recommended_action;
     $('r-approval').textContent = r.approval_required ? 'Yes' : 'No';

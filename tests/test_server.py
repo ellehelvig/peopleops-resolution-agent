@@ -71,6 +71,8 @@ class ServerTests(unittest.TestCase):
         self.assertEqual(status, 200)
         self.assertEqual(case["status"], "waiting_approval")
         self.assertIn("created_at", case)
+        self.assertEqual(case["employee_id"], "E-1001")
+        self.assertEqual(case["request"], "What parental leave am I eligible for?")
 
         status, decided = self._post(f"/api/cases/{case['case_id']}/decision", {"decision": "approve", "reviewer": "Test Partner", "note": "ok"})
         self.assertEqual(status, 200)

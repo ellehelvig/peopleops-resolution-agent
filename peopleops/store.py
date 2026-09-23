@@ -18,9 +18,15 @@ class CaseStore:
         self.cases = {case["id"]: deepcopy(case) for case in SEED_CASES}
         self.audit: list[dict] = []
 
-    def save(self, result: dict, actor: str = "employee") -> dict:
+    def save(self, result: dict, actor: str = "employee", request: str = "", employee_id: str = "") -> dict:
         with self._lock:
             row = deepcopy(result)
+            # The ledger shows who asked and what they asked, as the seeded cases do.
+            # The engine result carries neither, so a live case listed as "employee n/a".
+            if request:
+                row["request"] = request
+            if employee_id:
+                row["employee_id"] = employee_id
             row["created_at"] = datetime.now(timezone.utc).isoformat()
             self.cases[row["case_id"]] = row
             while len(self.cases) > MAX_CASES:

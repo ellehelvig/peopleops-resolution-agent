@@ -2,7 +2,11 @@
 
 A reference implementation of a governed HR agent that carries a synthetic employee request from intake to a grounded recommendation, human approval, audit trail, and operating metrics.
 
-[![Quality](https://github.com/ellehelvig/peopleops-resolution-agent/actions/workflows/quality.yml/badge.svg)](https://github.com/ellehelvig/peopleops-resolution-agent/actions/workflows/quality.yml) ![Python](https://img.shields.io/badge/Python-3.11%2B-17362d) ![Tests](https://img.shields.io/badge/tests-44%20unit%20%2B%2060%20evals-d8f171) ![Data](https://img.shields.io/badge/data-synthetic-7aa894)
+[![Quality](https://github.com/ellehelvig/peopleops-resolution-agent/actions/workflows/quality.yml/badge.svg)](https://github.com/ellehelvig/peopleops-resolution-agent/actions/workflows/quality.yml) ![Python](https://img.shields.io/badge/Python-3.11%2B-17362d) ![Tests](https://img.shields.io/badge/tests-47%20unit%20%2B%2060%20evals-d8f171) ![Data](https://img.shields.io/badge/data-synthetic-7aa894)
+
+![Resolve walkthrough: a parental-leave request answered with a policy citation, a prompt-injection attempt refused, and a People Partner approving the draft](docs/assets/resolve-walkthrough.gif)
+
+*20-second walkthrough on synthetic data. [Try the live demo](https://peopleops-resolution-agent.onrender.com); it can take about 30 seconds to wake up.*
 
 ## What works
 
@@ -41,7 +45,7 @@ Open the [live demo](https://peopleops-resolution-agent.onrender.com). To use th
 Run the tests and evaluation baseline:
 
 ```bash
-python3 -m unittest discover -s tests -v   # 44 workflow, safety, privacy, HTTP contract, and eval-regression tests
+python3 -m unittest discover -s tests -v   # 47 workflow, safety, privacy, HTTP contract, and eval-regression tests
 python3 -m evals.run                        # 60 cases across ten risk categories
 ```
 
@@ -79,7 +83,7 @@ The default engine is deterministic so every policy and safety decision can be r
 | `.github/workflows/quality.yml` | Tests and evaluation on every push and pull request |
 | `web/` | Responsive intake, approval, operations, and governance UI |
 | `evals/` | 60 cases across ten risk categories and report generator |
-| `tests/` | 44 tests: engine workflows and safety gates, HTTP contract (including path traversal and input limits), and evaluation-report drift |
+| `tests/` | 47 tests: engine workflows, safety gates, routing basis, HTTP contract (including path traversal and input limits), and evaluation-report drift |
 | `docs/` | Architecture, governance, evaluation, pilot, roadmap, and case study |
 
 ## Production path
