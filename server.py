@@ -19,6 +19,12 @@ ROOT = Path(__file__).resolve().parent
 WEB = ROOT / "web"
 REPORT = ROOT / "evals" / "latest_report.json"
 API = Api(json.loads(REPORT.read_text()) if REPORT.is_file() else None)
+
+# Static files are an allowlist built once from web/. A request can only select
+# one of these entries, so no part of the URL ever becomes a filesystem path or
+# a response header.
+STATIC = {"/" + p.relative_to(WEB).as_posix(): p for p in WEB.rglob("*") if p.is_file()}
+STATIC["/"] = WEB / "index.html"
 RATE_LIMIT_WINDOW_SECONDS = 60
 RATE_LIMIT_REQUESTS = 60
 RATE_LIMITS: dict[str, deque[float]] = defaultdict(deque)
@@ -80,8 +86,8 @@ class Handler(BaseHTTPRequestHandler):
             status, payload = API.handle("GET", path)
             self._json(payload, status)
             return
-        target = WEB / ("index.html" if path == "/" else path.lstrip("/"))
-        if not target.is_file() or WEB not in target.resolve().parents:
+        target = STATIC.get(path)
+        if target is None:
             self.send_error(404)
             return
         body = target.read_bytes()

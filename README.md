@@ -2,7 +2,7 @@
 
 A reference implementation of a governed HR agent that carries a synthetic employee request from intake to a grounded recommendation, human approval, audit trail, and operating metrics.
 
-[![Quality](https://github.com/ellehelvig/peopleops-resolution-agent/actions/workflows/quality.yml/badge.svg)](https://github.com/ellehelvig/peopleops-resolution-agent/actions/workflows/quality.yml) ![Python](https://img.shields.io/badge/Python-3.11%2B-17362d) ![Tests](https://img.shields.io/badge/tests-52%20unit%20%2B%2060%20evals-d8f171) ![Data](https://img.shields.io/badge/data-synthetic-7aa894)
+[![Quality](https://github.com/ellehelvig/peopleops-resolution-agent/actions/workflows/quality.yml/badge.svg)](https://github.com/ellehelvig/peopleops-resolution-agent/actions/workflows/quality.yml) ![Python](https://img.shields.io/badge/Python-3.11%2B-17362d) ![Tests](https://img.shields.io/badge/tests-53%20unit%20%2B%2060%20evals-d8f171) ![Data](https://img.shields.io/badge/data-synthetic-7aa894)
 
 ![Resolve walkthrough: a parental-leave request answered with a policy citation, a prompt-injection attempt refused, and a People Partner approving the draft](docs/assets/resolve-walkthrough.gif)
 
@@ -45,7 +45,7 @@ Open the [live demo](https://ellehelvig.github.io/peopleops-resolution-agent/). 
 Run the tests and evaluation baseline:
 
 ```bash
-python3 -m unittest discover -s tests -v   # 52 workflow, safety, privacy, HTTP contract, and eval-regression tests
+python3 -m unittest discover -s tests -v   # 53 workflow, safety, privacy, HTTP contract, and eval-regression tests
 python3 -m evals.run                        # 60 cases across ten risk categories
 ```
 
@@ -89,7 +89,7 @@ The default engine is deterministic so every policy and safety decision can be r
 | `.github/workflows/pages.yml` | Publishes the static demo to GitHub Pages on every push to `main` |
 | `web/` | Responsive intake, approval, operations, and governance UI |
 | `evals/` | 60 cases across ten risk categories and report generator |
-| `tests/` | 52 tests: engine workflows, safety gates, routing basis, the shared server and browser API, HTTP contract (including path traversal and input limits), and evaluation-report drift |
+| `tests/` | 53 tests: engine workflows, safety gates, routing basis, the shared server and browser API, HTTP contract (including path traversal and input limits), and evaluation-report drift |
 | `docs/` | Architecture, governance, evaluation, pilot, roadmap, and case study |
 
 ## Production path
