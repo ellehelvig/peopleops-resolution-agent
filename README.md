@@ -1,8 +1,18 @@
-# Resolve: PeopleOps Resolution Agent
+<p align="center">
+  <img src="docs/assets/resolve-banner.svg" alt="Resolve: PeopleOps Resolution Agent" width="100%">
+</p>
 
-A reference implementation of a governed HR agent that carries a synthetic employee request from intake to a grounded recommendation, human approval, audit trail, and operating metrics.
+<p align="center">
+  A governed HR agent that carries a synthetic employee request from intake to a grounded recommendation, human approval, audit trail, and operating metrics.
+</p>
 
-[![Quality](https://github.com/ellehelvig/peopleops-resolution-agent/actions/workflows/quality.yml/badge.svg)](https://github.com/ellehelvig/peopleops-resolution-agent/actions/workflows/quality.yml) ![Python](https://img.shields.io/badge/Python-3.11%2B-17362d) ![Tests](https://img.shields.io/badge/tests-53%20unit%20%2B%2060%20evals-d8f171) ![Data](https://img.shields.io/badge/data-synthetic-7aa894)
+<p align="center">
+  <a href="https://github.com/ellehelvig/peopleops-resolution-agent/actions/workflows/quality.yml"><img alt="Quality" src="https://img.shields.io/github/actions/workflow/status/ellehelvig/peopleops-resolution-agent/quality.yml?branch=main&amp;style=flat-square&amp;label=tests"></a>
+  <a href="https://ellehelvig.github.io/peopleops-resolution-agent/"><img alt="Live demo" src="https://img.shields.io/badge/live-demo-5b4bdb?style=flat-square"></a>
+  <img alt="53 tests and 60 evaluation cases" src="https://img.shields.io/badge/checks-53%20tests%20%2B%2060%20evals-5b4bdb?style=flat-square">
+  <img alt="Synthetic data" src="https://img.shields.io/badge/data-synthetic-0e7490?style=flat-square">
+  <a href="LICENSE"><img alt="License" src="https://img.shields.io/badge/license-MIT-1a2233?style=flat-square"></a>
+</p>
 
 ![Resolve walkthrough: a parental-leave request answered with a policy citation, a prompt-injection attempt refused, and a People Partner approving the draft](docs/assets/resolve-walkthrough.gif)
 
