@@ -61,6 +61,15 @@ class ServerTests(unittest.TestCase):
         self.assertIn("Content-Security-Policy", headers)
         self.assertIn(b"<html", body.lower())
 
+    def test_only_files_in_web_are_served(self) -> None:
+        for path in ("/../server.py", "/%2e%2e/server.py", "/web/app.js", "/peopleops/api.py", "/nope.js"):
+            with self.subTest(path=path), self.assertRaises(urllib.error.HTTPError) as ctx:
+                self._get(path)
+            self.assertEqual(ctx.exception.code, 404)
+        status, headers, _ = self._get("/app.js")
+        self.assertEqual(status, 200)
+        self.assertIn("javascript", headers["Content-Type"])
+
     def test_path_traversal_is_blocked(self) -> None:
         with self.assertRaises(urllib.error.HTTPError) as ctx:
             self._get("/../server.py")
