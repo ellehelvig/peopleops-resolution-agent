@@ -6,7 +6,7 @@ A reference implementation of a governed HR agent that carries a synthetic emplo
 
 ![Resolve walkthrough: a parental-leave request answered with a policy citation, a prompt-injection attempt refused, and a People Partner approving the draft](docs/assets/resolve-walkthrough.gif)
 
-*20-second walkthrough on synthetic data. [Try the live demo](https://peopleops-resolution-agent.onrender.com); it can take about 30 seconds to wake up.*
+*20-second walkthrough on synthetic data. [Try the live demo](https://ellehelvig.github.io/peopleops-resolution-agent/): it runs entirely in your browser.*
 
 ## What works
 
@@ -40,7 +40,7 @@ cd peopleops-resolution-agent
 python3 server.py
 ```
 
-Open the [live demo](https://peopleops-resolution-agent.onrender.com). To use the local version instead, open [http://127.0.0.1:8765](http://127.0.0.1:8765) after starting the server. Try the example prompts, then review the approval queue, operations view, and governance controls.
+Open the [live demo](https://ellehelvig.github.io/peopleops-resolution-agent/). To use the local version instead, open [http://127.0.0.1:8765](http://127.0.0.1:8765) after starting the server. Try the example prompts, then review the approval queue, operations view, and governance controls.
 
 Run the tests and evaluation baseline:
 
@@ -49,9 +49,9 @@ python3 -m unittest discover -s tests -v   # 52 workflow, safety, privacy, HTTP 
 python3 -m evals.run                        # 60 cases across ten risk categories
 ```
 
-### Running without a server
+### How the live demo runs
 
-The demo also runs as a static site with no server. GitHub Pages serves the page, and the page runs this repository's Python in the visitor's browser through [Pyodide](https://pyodide.org/). Both ways of running the app call one handler, `peopleops/api.py`: `server.py` wraps it in HTTP for local use, and `web/in-browser-api.js` calls it directly in the browser. So the demo runs exactly the code the tests and evaluations check, each visitor gets a private session, and nothing they type leaves their browser. The first visit takes a few seconds while Python loads; later visits are cached.
+The live demo has no server. GitHub Pages serves the page, and the page runs this repository's Python in the visitor's browser through [Pyodide](https://pyodide.org/). Both ways of running the app call one handler, `peopleops/api.py`: `server.py` wraps it in HTTP for local use, and `web/in-browser-api.js` calls it directly in the browser. So the demo runs exactly the code the tests and evaluations check, each visitor gets a private session, and nothing they type leaves their browser. The first visit takes a few seconds while Python loads; later visits are cached.
 
 The evaluation command writes `evals/latest_report.json`. That file is committed on purpose: CI recomputes the baseline and fails if the committed report no longer matches the engine, so the evidence can't drift from the code. Results are evidence about this deterministic baseline, not claims about an untested LLM configuration.
 
@@ -85,7 +85,6 @@ The default engine is deterministic so every policy and safety decision can be r
 | `peopleops/data.py` | Synthetic HRIS and versioned policy records |
 | `peopleops/store.py` | Thread-safe demo case and audit store |
 | `mcp_server.py` | Optional MCP facade for four least-privilege tools |
-| `render.yaml` | One-click Render web-service configuration |
 | `.github/workflows/quality.yml` | Tests and evaluation on every push and pull request |
 | `.github/workflows/pages.yml` | Publishes the static demo to GitHub Pages on every push to `main` |
 | `web/` | Responsive intake, approval, operations, and governance UI |
