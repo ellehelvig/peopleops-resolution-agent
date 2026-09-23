@@ -1,0 +1,46 @@
+name: Demo site
+
+# Publishes the demo to GitHub Pages as a static site. There is no server: the
+# page runs peopleops/api.py in the visitor's browser through Pyodide, so the
+# site is just the web/ files, the peopleops/ package, and the committed
+# evaluation report.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Build and deploy
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Assemble the static site
+        run: |
+          mkdir -p _site/peopleops _site/evals
+          cp web/* _site/
+          cp peopleops/*.py _site/peopleops/
+          cp evals/latest_report.json _site/evals/
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+      - id: deployment
+        uses: actions/deploy-pages@v5

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Zero-dependency local API and static server."""
+"""Zero-dependency local HTTP server: static files plus the API in peopleops/api.py."""
 
 from __future__ import annotations
 
@@ -13,14 +13,12 @@ from collections import defaultdict, deque
 from threading import Lock
 from urllib.parse import urlparse
 
-from peopleops.data import EMPLOYEES, POLICIES
-from peopleops.engine import ResolutionEngine
-from peopleops.store import CaseStore
+from peopleops.api import Api
 
 ROOT = Path(__file__).resolve().parent
 WEB = ROOT / "web"
-ENGINE = ResolutionEngine()
-STORE = CaseStore()
+REPORT = ROOT / "evals" / "latest_report.json"
+API = Api(json.loads(REPORT.read_text()) if REPORT.is_file() else None)
 RATE_LIMIT_WINDOW_SECONDS = 60
 RATE_LIMIT_REQUESTS = 60
 RATE_LIMITS: dict[str, deque[float]] = defaultdict(deque)
@@ -73,34 +71,14 @@ class Handler(BaseHTTPRequestHandler):
             raise ValueError("Request body must be a JSON object.")
         return payload
 
-    @staticmethod
-    def _text(payload: dict, field: str, default: str = "") -> str:
-        value = payload.get(field, default)
-        if not isinstance(value, str):
-            raise ValueError(f"{field} must be a string.")
-        return value.strip()
-
     def do_GET(self) -> None:
         if self._rate_limited():
             self._json({"error": "Too many requests. Please try again shortly."}, 429)
             return
         path = urlparse(self.path).path
-        if path == "/api/bootstrap":
-            self._json({
-                "employees": [{"id": e["id"], "name": e["name"], "region": e["region"], "role_category": e["role_category"]} for e in EMPLOYEES.values()],
-                "metrics": STORE.metrics(), "cases": STORE.list_cases(), "audit": STORE.audit[-20:],
-                "policies": [{k: p[k] for k in ("id", "title", "topic", "version", "effective_date", "status", "owner")} for p in POLICIES],
-            })
-            return
-        if path == "/api/health":
-            self._json({"status": "ok", "mode": "deterministic", "synthetic_data": True})
-            return
-        if path == "/api/evaluation":
-            report = ROOT / "evals" / "latest_report.json"
-            if not report.is_file():
-                self._json({"error": "No evaluation report. Run: python3 -m evals.run"}, 404)
-                return
-            self._json(json.loads(report.read_text()))
+        if path.startswith("/api/"):
+            status, payload = API.handle("GET", path)
+            self._json(payload, status)
             return
         target = WEB / ("index.html" if path == "/" else path.lstrip("/"))
         if not target.is_file() or WEB not in target.resolve().parents:
@@ -136,27 +114,11 @@ class Handler(BaseHTTPRequestHandler):
         path = urlparse(self.path).path
         try:
             payload = self._body()
-            if path == "/api/resolve":
-                request = self._text(payload, "request")
-                if not request or len(request) > 4000:
-                    self._json({"error": "Request must be between 1 and 4,000 characters."}, 400)
-                    return
-                employee_id = self._text(payload, "employee_id")
-                result = ENGINE.resolve(request, employee_id, self._text(payload, "actor_role", "employee"))
-                self._json(STORE.save(result, request=request, employee_id=employee_id))
-                return
-            if path.startswith("/api/cases/") and path.endswith("/decision"):
-                case_id = path.split("/")[3]
-                decision = self._text(payload, "decision")
-                if decision not in {"approve", "reject"}:
-                    self._json({"error": "Decision must be approve or reject."}, 400)
-                    return
-                row = STORE.decide(case_id, decision, self._text(payload, "reviewer"), self._text(payload, "note"))
-                self._json(row or {"error": "Case not found."}, 200 if row else 404)
-                return
-            self._json({"error": "Not found."}, 404)
         except (ValueError, json.JSONDecodeError) as exc:
             self._json({"error": f"Invalid request: {exc}"}, 400)
+            return
+        status, body = API.handle("POST", path, payload)
+        self._json(body, status)
 
 
 if __name__ == "__main__":
