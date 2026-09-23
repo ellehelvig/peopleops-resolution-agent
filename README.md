@@ -4,6 +4,10 @@ A reference implementation of a governed HR agent that carries a synthetic emplo
 
 [![Quality](https://github.com/ellehelvig/peopleops-resolution-agent/actions/workflows/quality.yml/badge.svg)](https://github.com/ellehelvig/peopleops-resolution-agent/actions/workflows/quality.yml) ![Python](https://img.shields.io/badge/Python-3.11%2B-17362d) ![Tests](https://img.shields.io/badge/tests-44%20unit%20%2B%2060%20evals-d8f171) ![Data](https://img.shields.io/badge/data-synthetic-7aa894)
 
+![Resolve walkthrough: a parental-leave request answered with a policy citation, a prompt-injection attempt refused, and a People Partner approving the draft](docs/assets/resolve-walkthrough.gif)
+
+*20-second walkthrough on synthetic data. [Try the live demo](https://peopleops-resolution-agent.onrender.com); it can take about 30 seconds to wake up.*
+
 ## What works
 
 - Four workflows: parental leave, remote work, relocation, and manager change.

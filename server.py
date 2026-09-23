@@ -141,8 +141,9 @@ class Handler(BaseHTTPRequestHandler):
                 if not request or len(request) > 4000:
                     self._json({"error": "Request must be between 1 and 4,000 characters."}, 400)
                     return
-                result = ENGINE.resolve(request, self._text(payload, "employee_id"), self._text(payload, "actor_role", "employee"))
-                self._json(STORE.save(result))
+                employee_id = self._text(payload, "employee_id")
+                result = ENGINE.resolve(request, employee_id, self._text(payload, "actor_role", "employee"))
+                self._json(STORE.save(result, request=request, employee_id=employee_id))
                 return
             if path.startswith("/api/cases/") and path.endswith("/decision"):
                 case_id = path.split("/")[3]
