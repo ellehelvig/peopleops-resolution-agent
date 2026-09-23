@@ -28,11 +28,37 @@
   function label(s) { return String(s || '').replace(/_/g, ' '); }
   function shortTime(iso) { return iso ? iso.replace('T', ' ').slice(0, 19) : ''; }
 
-  async function api(path, options) {
+  // The same API runs either behind server.py or, when there is no server
+  // (the static GitHub Pages demo), in this browser through Pyodide.
+  var transport = null;
+
+  async function httpCall(path, options) {
     var res = await fetch(path, options);
     var body = await res.json();
-    if (!res.ok) throw new Error(body.error || ('Request failed: ' + res.status));
-    return body;
+    return { status: res.status, payload: body };
+  }
+
+  async function pickTransport() {
+    try {
+      var res = await fetch('/api/health', { cache: 'no-store' });
+      if (res.ok && (await res.json()).status === 'ok') return httpCall;
+    } catch (e) { /* no server: fall through to the in-browser engine */ }
+    $('submit').disabled = true;
+    $('submit-status').textContent = 'Starting the Python engine in your browser. This takes a few seconds on the first visit.';
+    var call = await window.ResolveInBrowser.start();
+    $('submit').disabled = false;
+    $('submit-status').textContent = '';
+    return async function (path, options) {
+      var opts = options || {};
+      return call(opts.method || 'GET', path, opts.body || '');
+    };
+  }
+
+  async function api(path, options) {
+    if (!transport) transport = pickTransport();
+    var result = await (await transport)(path, options);
+    if (result.status >= 400) throw new Error(result.payload.error || ('Request failed: ' + result.status));
+    return result.payload;
   }
 
   async function bootstrap() {
@@ -257,5 +283,5 @@
   }
 
   wire();
-  bootstrap().catch(function (err) { $('submit-status').textContent = 'Could not reach the API: ' + err.message; });
+  bootstrap().catch(function (err) { $('submit').disabled = true; $('submit-status').textContent = 'Could not start the demo: ' + err.message; });
 })();

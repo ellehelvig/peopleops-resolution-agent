@@ -2,7 +2,7 @@
 
 A reference implementation of a governed HR agent that carries a synthetic employee request from intake to a grounded recommendation, human approval, audit trail, and operating metrics.
 
-[![Quality](https://github.com/ellehelvig/peopleops-resolution-agent/actions/workflows/quality.yml/badge.svg)](https://github.com/ellehelvig/peopleops-resolution-agent/actions/workflows/quality.yml) ![Python](https://img.shields.io/badge/Python-3.11%2B-17362d) ![Tests](https://img.shields.io/badge/tests-47%20unit%20%2B%2060%20evals-d8f171) ![Data](https://img.shields.io/badge/data-synthetic-7aa894)
+[![Quality](https://github.com/ellehelvig/peopleops-resolution-agent/actions/workflows/quality.yml/badge.svg)](https://github.com/ellehelvig/peopleops-resolution-agent/actions/workflows/quality.yml) ![Python](https://img.shields.io/badge/Python-3.11%2B-17362d) ![Tests](https://img.shields.io/badge/tests-52%20unit%20%2B%2060%20evals-d8f171) ![Data](https://img.shields.io/badge/data-synthetic-7aa894)
 
 ![Resolve walkthrough: a parental-leave request answered with a policy citation, a prompt-injection attempt refused, and a People Partner approving the draft](docs/assets/resolve-walkthrough.gif)
 
@@ -45,9 +45,13 @@ Open the [live demo](https://peopleops-resolution-agent.onrender.com). To use th
 Run the tests and evaluation baseline:
 
 ```bash
-python3 -m unittest discover -s tests -v   # 47 workflow, safety, privacy, HTTP contract, and eval-regression tests
+python3 -m unittest discover -s tests -v   # 52 workflow, safety, privacy, HTTP contract, and eval-regression tests
 python3 -m evals.run                        # 60 cases across ten risk categories
 ```
+
+### Running without a server
+
+The demo also runs as a static site with no server. GitHub Pages serves the page, and the page runs this repository's Python in the visitor's browser through [Pyodide](https://pyodide.org/). Both ways of running the app call one handler, `peopleops/api.py`: `server.py` wraps it in HTTP for local use, and `web/in-browser-api.js` calls it directly in the browser. So the demo runs exactly the code the tests and evaluations check, each visitor gets a private session, and nothing they type leaves their browser. The first visit takes a few seconds while Python loads; later visits are cached.
 
 The evaluation command writes `evals/latest_report.json`. That file is committed on purpose: CI recomputes the baseline and fails if the committed report no longer matches the engine, so the evidence can't drift from the code. Results are evidence about this deterministic baseline, not claims about an untested LLM configuration.
 
@@ -74,16 +78,19 @@ The default engine is deterministic so every policy and safety decision can be r
 
 | Path | Purpose |
 |---|---|
-| `server.py` | Zero-dependency JSON API and static app server |
+| `peopleops/api.py` | Every API route, independent of transport; used by the server and the browser |
+| `server.py` | Zero-dependency HTTP wrapper: static files, rate limits, and security headers around `peopleops/api.py` |
+| `web/in-browser-api.js` | Runs `peopleops/api.py` in the browser through Pyodide when there is no server |
 | `peopleops/engine.py` | Orchestration, safety routing, eligibility, and approval logic |
 | `peopleops/data.py` | Synthetic HRIS and versioned policy records |
 | `peopleops/store.py` | Thread-safe demo case and audit store |
 | `mcp_server.py` | Optional MCP facade for four least-privilege tools |
 | `render.yaml` | One-click Render web-service configuration |
 | `.github/workflows/quality.yml` | Tests and evaluation on every push and pull request |
+| `.github/workflows/pages.yml` | Publishes the static demo to GitHub Pages on every push to `main` |
 | `web/` | Responsive intake, approval, operations, and governance UI |
 | `evals/` | 60 cases across ten risk categories and report generator |
-| `tests/` | 47 tests: engine workflows, safety gates, routing basis, HTTP contract (including path traversal and input limits), and evaluation-report drift |
+| `tests/` | 52 tests: engine workflows, safety gates, routing basis, the shared server and browser API, HTTP contract (including path traversal and input limits), and evaluation-report drift |
 | `docs/` | Architecture, governance, evaluation, pilot, roadmap, and case study |
 
 ## Production path
