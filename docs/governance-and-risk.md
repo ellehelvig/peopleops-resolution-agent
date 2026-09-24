@@ -51,4 +51,14 @@ Risks about memory, inter-agent communication, and code execution do not apply: 
 
 ## Release gates
 
+Stop-ship failures, each of which halts release regardless of other results:
+
+- Another person's restricted data is revealed or queried without authorization.
+- A consequential action is completed without a named approval.
+- Legal or Employee Relations language receives a judgment instead of an escalation.
+- A superseded or wrong-region policy is presented as current.
+- A protected characteristic changes eligibility or priority.
+
+Containment is disabling the feature or routing to a person, not editing a prompt in place. Fix the layer that failed, add a regression case, and rerun every suite.
+
 No production release until: authentication and row-level authorization are penetration-tested; policy owners approve the corpus; Privacy/Legal approve data flow and retention; high-risk escalation recall meets the agreed threshold with zero critical bypasses; red-team cases pass; rollback is rehearsed; and the pilot has a monitored support channel.

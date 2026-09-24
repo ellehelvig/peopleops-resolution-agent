@@ -1,22 +1,14 @@
-<p align="center">
-  <img src="docs/assets/resolve-banner.svg" alt="Resolve: PeopleOps Resolution Agent" width="100%">
-</p>
+# Resolve: PeopleOps Resolution Agent
 
-<p align="center">
-  A governed HR case workflow that carries a synthetic employee request from intake to a cited recommendation, human approval, and an audit trail.
-</p>
+A governed HR case workflow that carries a synthetic employee request from intake to a cited recommendation, human approval, and an audit trail.
 
-<p align="center">
-  <a href="https://github.com/ellehelvig/peopleops-resolution-agent/actions/workflows/quality.yml"><img alt="Quality" src="https://img.shields.io/github/actions/workflow/status/ellehelvig/peopleops-resolution-agent/quality.yml?branch=main&amp;style=flat-square&amp;label=tests"></a>
-  <a href="https://ellehelvig.github.io/peopleops-resolution-agent/"><img alt="Live demo" src="https://img.shields.io/badge/live-demo-5b4bdb?style=flat-square"></a>
-  <a href="LICENSE"><img alt="License" src="https://img.shields.io/badge/license-MIT-1a2233?style=flat-square"></a>
-</p>
+[![Tests](https://img.shields.io/github/actions/workflow/status/ellehelvig/peopleops-resolution-agent/quality.yml?branch=main&style=flat-square&label=tests)](https://github.com/ellehelvig/peopleops-resolution-agent/actions/workflows/quality.yml)
 
 ![Resolve walkthrough: a parental-leave request answered with a policy citation, a prompt-injection attempt refused, and a People Partner approving the draft](docs/assets/resolve-walkthrough.gif)
 
 *20-second walkthrough on synthetic data. [Try the live demo](https://ellehelvig.github.io/peopleops-resolution-agent/): it runs entirely in your browser.*
 
-> **What this is.** A rules-based prototype with no language model in it. It is the part of an HR agent that should never be left to a model: safety screening, eligibility, policy selection, data minimization, and the human approval gate. A [held-out test](#how-far-the-rules-generalize) shows where keyword rules stop working, which is where a model would be added. Built with AI-assisted development (Claude Code); I defined the workflow, controls, and evaluation.
+> **What this is.** A rules-based prototype with no language model in it. It is the part of an HR agent that should never be left to a model: safety screening, eligibility, policy selection, data minimization, and the human approval gate. A [held-out test](#how-far-the-rules-generalize) shows where keyword rules stop working, which is where a model would be added. Built with AI-assisted development (Claude Code); I defined the workflow, controls, and evaluation. The work-design reasoning behind it is in the [People Partner case study](https://github.com/ellehelvig/hr-ai-transformation-playbook/blob/main/01-use-cases/work-redesign-people-partner.md).
 
 ## What works
 
@@ -116,11 +108,13 @@ Every box is ordinary Python in `peopleops/engine.py`. The MCP server exposes th
 | `web/` | Responsive intake, approval, operations, and governance UI |
 | `evals/` | 60 baseline cases across ten risk categories, 16 held-out cases, and the report generator |
 | `tests/` | Engine workflows, safety gates, routing basis, the shared server and browser API, HTTP contract (including path traversal and input limits), the MCP tool surface, and evaluation-report drift |
-| `docs/` | Architecture, governance, evaluation, pilot, roadmap, and case study |
+| `docs/` | Architecture, governance and risk, evaluation methodology, and pilot plan |
 
 ## Production path
 
-Replace in-memory stores with a row-level-secured database; authenticate employee and reviewer identities; put write tools behind durable approval state; encrypt case fields; export redacted observability events; add policy-owner publishing workflow; and validate any model-enabled version against the baseline and held-out sets before release. See [docs/architecture.md](docs/architecture.md) and [docs/governance-and-risk.md](docs/governance-and-risk.md).
+Replace in-memory stores with a row-level-secured database; authenticate employee and reviewer identities; put write tools behind durable approval state; encrypt case fields; export redacted observability events; add policy-owner publishing workflow; and validate any model-enabled version against the baseline and held-out sets before release. See [docs/architecture.md](docs/architecture.md) and [docs/governance-and-risk.md](docs/governance-and-risk.md). A [pilot plan](docs/pilot-plan.md) separates what a pilot would measure from what must be true to proceed.
+
+Out of scope until separately governed: candidate ranking, performance ratings, compensation recommendations, discipline or termination, medical inference, employee monitoring, and autonomous employment actions.
 
 ## Documentation basis
 
