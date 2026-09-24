@@ -6,7 +6,7 @@ Routine HR requests often move through fragmented intake, policy search, HRIS lo
 
 ## Intervention
 
-Resolve demonstrates a controlled human-plus-agent workflow for four common requests. The system identifies sensitivity before retrieval, accesses only eligibility fields, grounds its response in an active policy version, pauses consequential recommendations for named approval, and writes an auditable decision record.
+Resolve demonstrates a controlled workflow for four common requests. This version is rules-based and uses no language model, so every routing decision is reproducible. The system identifies sensitivity before retrieval, accesses only eligibility fields, grounds its response in an active policy version, pauses consequential recommendations for named approval, and writes an auditable decision record.
 
 ## Why it matters
 
@@ -14,7 +14,7 @@ The value is not a conversational front end. It is a redesigned operating model:
 
 ## Evidence today
 
-The working local product includes four workflow paths, four narrow MCP tools, an approval experience, operating metrics, and 60 synthetic regression cases across ten risk categories. Results are reproducible with one command. Adoption and time savings remain hypotheses until the practitioner pilot is completed.
+The working local product includes four workflow paths, three narrow MCP tools, an approval experience, operating metrics, and 60 synthetic regression cases across ten risk categories. Results are reproducible with one command. A separate held-out set of 16 realistically phrased requests passes 0 of 16, and in four of them an Employee Relations or legal concern gets a generic reply instead of an escalation. That gap is the main argument for adding a language-model classifier, and the reason it would need its own evaluation before a pilot. Adoption and time savings remain hypotheses until the practitioner pilot is completed.
 
 ## Decision requested
 

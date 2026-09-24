@@ -20,8 +20,9 @@ The agent may classify, retrieve, compare, draft, create a pending case, and rec
 |---|---|---|---|---|
 | `retrieve_policy` | Read active policy | Topic, region | Active version(s) and rules | Empty result → human escalation |
 | `get_employee_eligibility_fields` | Read allowlisted HRIS view | Auth-bound employee ID | Region, status, service, type, role category | Missing/mismatch → clarification |
-| `create_case` | Create draft only | Validated decision record | Case ID and pending state | No downstream action |
-| `record_approval` | Record named human decision | Case, approve/reject, reviewer, note | Updated case and audit event | Reject invalid/unknown case |
+| `create_case` | Create draft only | Request text and employee ID; the engine sets status, risk, citations, and the approval requirement | Case ID and resulting state | No downstream action |
+
+There is no approval tool. Any MCP tool can be called by the model on the other end of the connection, so exposing one that records a human decision would let the model approve its own recommendation. Approvals are recorded only through the reviewer UI and HTTP API. `tests/test_mcp_server.py` fails if an approval tool is added back or if `create_case` starts accepting decision fields from the caller.
 
 Production authorization is enforced in the tool/service layer, never delegated to the model. The self-service channel can read only the caller’s eligibility view. Reviewer roles can access cases assigned to their queue. Policy publishers cannot approve their own policy changes.
 
