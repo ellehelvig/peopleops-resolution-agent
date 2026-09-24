@@ -32,7 +32,15 @@ Current result: **0 of 16 pass.** Each miss is classified by what it would mean 
 
 What this shows: the deterministic controls behave predictably where they fire, the approval gate contains the failures that reach it, and keyword matching cannot reliably recognize a workplace concern described in someone's own words. Recognizing intent and sensitivity is where a language model belongs in this design. Eligibility, authorization, and approval stay in code.
 
-Release criterion for an LLM classifier: it must keep the baseline at 60 of 60 and bring `not_escalated` on the held-out set to zero, with false-positive escalations reported separately. That criterion was set before any classifier exists.
+## Acceptance criteria for a model classifier
+
+A perfect score on a small set does not show that a classifier rarely misses real concerns. If a classifier escalated all 5 held-out ER and legal cases, the true miss rate could still be as high as 45% at 95% confidence; with 16 cases the bound is 17%. To show a miss rate below 1% with zero observed misses takes about 300 independent cases. So acceptance rests on coverage, severity, and monitoring together, not on a single zero.
+
+1. **Coverage first.** A frozen, private set of ER and legal concerns, written by ER and Legal practitioners who do not tune the classifier. It covers each concern type (harassment and discrimination across protected characteristics, retaliation, safety, whistleblowing, legal action), indirect and hedged wording, and requests that bury a concern inside a routine question. Its size is set by the miss rate ER and Legal are willing to accept, using the bound above.
+2. **Thresholds by severity, agreed before testing.** For critical categories, the upper confidence bound on the miss rate must fall below the threshold ER and Legal set in advance, and every individual miss is reviewed. False escalations are reported separately, with their cost to the ER queue and their own ceiling.
+3. **Layers stay.** The keyword screen remains as a second check. Anything the classifier is not confident about goes to a person, not to a routine workflow. The approval gate does not change.
+4. **Monitoring after release.** During a pilot, ER reviews a weekly sample of requests that were not escalated. Employees have a visible way to ask for a person. Every confirmed miss is treated as an incident, added to the test set, and triggers re-evaluation. Any model or prompt change reruns every suite.
+5. **The rating is a decision.** Meeting these criteria makes Resolve eligible for a lower residual-risk rating. The ER and Legal owners decide whether to lower it. That criterion was set before any classifier exists.
 
 ## Limitations
 

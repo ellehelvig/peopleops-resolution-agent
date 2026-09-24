@@ -49,6 +49,8 @@ class CaseStore:
             if case.get("status") != "waiting_approval":
                 raise ValueError("Only cases waiting for approval can be decided.")
             case["status"] = "approved" if decision == "approve" else "rejected"
+            # A rejection is a person overriding the system's recommendation.
+            case["human_override"] = decision == "reject"
             case["reviewer"] = reviewer.strip()
             case["review_note"] = note
             case["reviewed_at"] = datetime.now(timezone.utc).isoformat()

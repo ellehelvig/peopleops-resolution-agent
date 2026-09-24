@@ -77,7 +77,7 @@ The 60 baseline cases pass 60 of 60, but they were written alongside the keyword
 | A legitimate request was not recognized, so the employee was asked to clarify | 5 |
 | Negation misread ("I am not expecting a baby...") | 1 |
 
-The controls do what they say when they fire, and the approval gate contains what gets past them. Keyword rules cannot reliably recognize a concern described in someone's own words, and that is the job a language model should do here. Any model version would need to keep the baseline at 60 of 60 and bring unescalated concerns on this set to zero. See [evaluation methodology](docs/evaluation-methodology.md#held-out-cases).
+The controls do what they say when they fire, and the approval gate contains what gets past them. Keyword rules cannot reliably recognize a concern described in someone's own words, and that is the job a language model should do here. A model version would need a much larger, independently written test set before its results meant much: even a perfect score on these 16 cases leaves a possible miss rate of 17%. See the [acceptance criteria](docs/evaluation-methodology.md#acceptance-criteria-for-a-model-classifier).
 
 ## Architecture
 
