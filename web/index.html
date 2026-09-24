@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Resolve | PeopleOps Resolution Agent</title>
-  <meta name="description" content="Governed HR case-resolution agent demo: grounded recommendations, human approval, audit trail, and an evaluation baseline. Synthetic data only.">
+  <meta name="description" content="Governed HR case-resolution workflow demo: cited recommendations, human approval, audit trail, and an evaluation baseline. Synthetic data only.">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net 'wasm-unsafe-eval'; connect-src 'self' https://cdn.jsdelivr.net; style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; object-src 'none'; base-uri 'none'">
   <link rel="stylesheet" href="styles.css">
 </head>
@@ -65,7 +65,7 @@
 
         <div class="card" id="result-card">
           <h2>Decision record</h2>
-          <p class="muted" id="result-empty">No request yet. The record shows exactly what the agent read, what it cited, and who has to approve before anything happens.</p>
+          <p class="muted" id="result-empty">No request yet. The record shows exactly what the system read, what it cited, and who has to approve before anything happens.</p>
           <div id="result" hidden>
             <div class="pill-row">
               <span class="pill" id="r-status"></span>
@@ -123,7 +123,7 @@
       </div>
       <div class="card">
         <h2>Quality baseline</h2>
-        <p class="muted">Separate from workflow measures. The 60-case suite runs deterministically in CI and the committed report must match the engine.</p>
+        <p class="muted">Separate from workflow measures. The 60-case suite runs deterministically in CI and the committed report must match the engine. Held-out cases show how far the rules generalize.</p>
         <div id="evals"></div>
       </div>
       <div class="card">
@@ -143,9 +143,9 @@
         <table class="table" id="controls-table">
           <thead><tr><th>Control</th><th>Implementation</th><th>Test</th></tr></thead>
           <tbody>
-            <tr><td>Prompt injection stops before any tool access</td><td><code>engine.py</code> INJECTION patterns, checked first</td><td><code>test_prompt_injection_is_refused_before_any_data_access</code></td></tr>
+            <tr><td>Known injection phrasings stop before any tool access</td><td><code>engine.py</code> INJECTION patterns, checked first</td><td><code>test_prompt_injection_is_refused_before_any_data_access</code></td></tr>
             <tr><td>No third-party sensitive data</td><td><code>engine.py</code> SENSITIVE terms plus other-person detection</td><td><code>test_other_persons_sensitive_data_is_refused</code></td></tr>
-            <tr><td>Employee Relations concerns are not investigated by the agent</td><td><code>engine.py</code> ER_TERMS route to <code>employee_relations</code></td><td><code>test_employee_relations_language_escalates_without_fact_finding</code></td></tr>
+            <tr><td>Employee Relations concerns are not investigated by the system</td><td><code>engine.py</code> ER_TERMS route to <code>employee_relations</code></td><td><code>test_employee_relations_language_escalates_without_fact_finding</code></td></tr>
             <tr><td>Legal language routes to Legal</td><td><code>engine.py</code> LEGAL_TERMS</td><td><code>test_legal_language_routes_to_legal</code></td></tr>
             <tr><td>Minimum-field employee lookup</td><td><code>data.py</code> <code>public_employee()</code> allowlist</td><td><code>test_bootstrap_exposes_only_minimum_employee_fields</code></td></tr>
             <tr><td>Only active policy versions are cited</td><td><code>data.py</code> <code>active_policies()</code> filters superseded</td><td><code>test_remote_work_uses_active_policy_version_not_superseded</code></td></tr>

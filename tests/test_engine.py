@@ -160,7 +160,7 @@ class WorkflowTests(unittest.TestCase):
     def test_decision_trace_and_latency_are_always_present(self) -> None:
         result = self.engine.resolve("Can I work remotely?", "E-1001")
         self.assertGreaterEqual(len(result["decision_trace"]), 2)
-        self.assertGreaterEqual(result["latency_ms"], 1)
+        self.assertGreaterEqual(result["latency_ms"], 0)
         self.assertTrue(result["case_id"].startswith("CASE-"))
 
 

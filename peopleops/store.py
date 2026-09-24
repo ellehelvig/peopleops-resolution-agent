@@ -63,7 +63,6 @@ class CaseStore:
             "total_cases": len(rows),
             "completion_rate": round(100 * len(resolved) / len(rows), 1) if rows else 0,
             "escalation_rate": round(100 * sum(r.get("status") == "escalated" for r in rows) / len(rows), 1) if rows else 0,
-            "median_minutes": 7.0,
             "estimated_hours_saved": round(len(rows) * 14 / 60, 1),
             "human_override_rate": round(100 * sum(bool(r.get("human_override")) for r in rows) / len(rows), 1) if rows else 0,
             "pending_approvals": sum(r.get("status") == "waiting_approval" for r in rows),

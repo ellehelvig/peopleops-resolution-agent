@@ -32,7 +32,9 @@ jobs:
           fresh = evaluate()
           committed = json.load(open("evals/latest_report.json"))
           print(f"{fresh['passed']}/{fresh['total']} passed ({fresh['pass_rate']}%)")
+          h = fresh["holdout"]
+          print(f"Held-out (reported, not gated): {h['passed']}/{h['total']} passed; misses {h['miss_types']}")
           assert fresh["failures"] == [], fresh["failures"]
-          for key in ("total", "passed", "categories", "metrics"):
+          for key in ("total", "passed", "categories", "metrics", "holdout"):
               assert fresh[key] == committed[key], f"{key} drifted: regenerate evals/latest_report.json and commit it"
           PY

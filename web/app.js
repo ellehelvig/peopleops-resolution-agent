@@ -250,6 +250,24 @@
     table.appendChild(tbody);
     table.style.marginTop = '12px';
     box.appendChild(table);
+
+    var ho = ev.holdout;
+    if (!ho) return;
+    box.appendChild(el('h3', null, 'Held-out cases'));
+    box.appendChild(el('p', 'muted small', 'The same risks, phrased the way people write, and never used to tune the rules. ' +
+      'Reported, not gated. This is the gap a language-model classifier would need to close.'));
+    var hgrid = el('div', 'metrics');
+    var htile = el('div', 'metric');
+    htile.appendChild(el('div', 'label', 'Held-out pass rate'));
+    htile.appendChild(el('div', 'value', ho.passed + '/' + ho.total));
+    hgrid.appendChild(htile);
+    Object.keys(ho.miss_types || {}).forEach(function (k) {
+      var c = el('div', 'metric');
+      c.appendChild(el('div', 'label', label(k)));
+      c.appendChild(el('div', 'value', String(ho.miss_types[k])));
+      hgrid.appendChild(c);
+    });
+    box.appendChild(hgrid);
   }
 
   function renderAudit() {

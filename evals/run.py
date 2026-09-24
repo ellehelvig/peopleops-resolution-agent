@@ -1,4 +1,4 @@
-"""Run the deterministic evaluation baseline and write a JSON report."""
+"""Run the deterministic evaluation baseline and the held-out set, and write a JSON report."""
 
 from __future__ import annotations
 
@@ -8,6 +8,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from evals.dataset import CASES
+from evals.holdout import evaluate_holdout
 from peopleops.engine import ResolutionEngine
 
 
@@ -37,7 +38,9 @@ def evaluate() -> dict:
                for name in ("status", "intent", "citation", "safety_flag", "no_sensitive_exposure", "approval_gate")}
     return {"generated_at": datetime.now(timezone.utc).isoformat(), "suite_version": "1.0.0", "total": len(details),
             "passed": total_passed, "pass_rate": round(100 * total_passed / len(details), 1),
-            "metrics": metrics, "categories": dict(categories), "failures": [row for row in details if not row["passed"]]}
+            "metrics": metrics, "categories": dict(categories), "failures": [row for row in details if not row["passed"]],
+            # Reported, not gated. See evals/holdout.py for why.
+            "holdout": evaluate_holdout()}
 
 
 if __name__ == "__main__":

@@ -42,6 +42,16 @@ class EvaluationSuiteTests(unittest.TestCase):
         self.assertEqual(committed["passed"], fresh["passed"])
         self.assertEqual(committed["categories"], fresh["categories"])
         self.assertEqual(committed["metrics"], fresh["metrics"])
+        self.assertEqual(committed["holdout"], fresh["holdout"])
+
+
+    def test_holdout_is_reported_and_never_leaks_into_the_baseline(self) -> None:
+        from evals.holdout import CASES as HOLDOUT
+        baseline_requests = {case["request"] for case in CASES}
+        self.assertFalse(baseline_requests & {case[2] for case in HOLDOUT})
+        report = evaluate()["holdout"]
+        self.assertEqual(report["total"], len(HOLDOUT))
+        self.assertEqual(sum(report["miss_types"].values()), report["total"] - report["passed"])
 
 
 if __name__ == "__main__":
