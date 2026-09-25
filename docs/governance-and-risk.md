@@ -1,31 +1,32 @@
 # Governance and risk register
 
-## Control model
+## Current prototype controls
 
-- **Roles:** employee (own-case intake), People Partner (assigned review), ER/Legal/Mobility (restricted queue), policy owner (publish), auditor (read-only events), platform admin (service health, no default case content).
-- **Minimization:** the HRIS tool uses an explicit allowlist. Sensitive categories are absent, not merely hidden in the UI.
-- **Human judgment:** every action affecting leave, work arrangement, location, or reporting line pauses for approval. Escalation is not approval.
-- **Audit:** record actor, event, timestamp, policy version, tool scope, outcome, and reviewer. Do not store chain-of-thought.
-- **Retention:** proposed case records 24 months; approval evidence 7 years where legally required; operational logs 90 days; security events 12 months; evaluation data indefinite only when fully synthetic. Final schedules require Legal/Privacy review by jurisdiction.
+**Proposed** means documented only; **implemented** means present in code; **tested** names the automated evidence and its scope; **validated** would require evidence in the intended operating setting. No production or practitioner validation has been completed.
+
+The demo uses synthetic records, an eight-field employee allowlist, keyword screens, and a pending-case approval state. Employee IDs, actor roles, and reviewer names are caller supplied, not authenticated. The API and optional MCP server have separate in-memory stores, bounded to 250 cases and 500 events. Restarting loses state. A case's decision trace is separate from store events (`resolution_created`, `human_approved`, `human_rejected`). No external referrals or HR changes are executed.
 
 ## Risk register
 
-| Risk | Inherent | Preventive control | Detection | Owner | Residual |
-|---|---:|---|---|---|---:|
-| Wrong policy/version | High | Active + region filter, immutable version | Citation evaluator, sampled review | Policy owner | Medium |
-| Sensitive-data exposure | Critical | Tool allowlist, actor-bound lookup, pre-tool refusal | DLP canary evals, audit alerts | Privacy | Low |
-| Improper employment action | Critical | Human approval, tool cannot execute changes | Approval-bypass test | People Ops | Low |
-| Bias/proxy discrimination | High | No protected fields; prohibit suitability ranking | Slice testing, override review | Responsible AI | Medium |
-| ER/legal mishandling | Critical | Early routing; no investigation | Escalation-accuracy metric; held-out cases | ER/Legal | **High** (see note) |
-| Prompt injection | High | Treat retrieved text as data; pre-tool detection | Adversarial evals | Security | Medium |
-| Automation complacency | High | Calibrated language, visible source/evidence | Human override + survey | Product owner | Medium |
-| Policy gap/conflict | High | Fail closed; never blend documents | Policy-gap alert | Policy owner | Low |
-| Outage/partial write | Medium | Idempotency, durable state, read-after-write | Error budget + reconciliation | Engineering | Low |
+These are current prototype risks. Except for the explicit ER/legal judgment below, residual risk has **not been assessed** after controls. Passing synthetic tests does not establish low operational risk.
 
-**Why ER/legal residual risk is High.** Two different things are being stated here, and they should not be confused.
+| Risk | Current control | Evidence and scope | Unresolved / proposed production control | Accountable role | Current residual |
+|---|---|---|---|---|---|
+| Wrong policy/version | Active, date, and region filter | Engine and baseline policy tests | Owner-controlled publication and conflict handling; code selects the first matching record | Policy owner | Not assessed |
+| Sensitive-data exposure | Allowlisted fields; known-phrase refusals | Privacy and bootstrap tests on synthetic records | Actor-bound access is proposed, not implemented; IDs can be supplied by any caller | Privacy | Not assessed |
+| Improper employment action | Pending-only decisions; no executing HR integration or MCP approval tool | Store/API tests and MCP source inspection | Typed reviewer is not authenticated; real authorization is proposed | People Ops | Not assessed |
+| Bias/proxy discrimination | No protected fields in eligibility view | Field non-exposure tests, not fairness validation | Proxy effects and operational fairness have not been validated | Responsible AI | Not assessed |
+| ER/legal mishandling | Known-phrase escalation status; no investigation | Original holdout: 0/5 concerns correctly escalated | Recognizing hidden concerns remains unresolved; no referral is actually sent | ER/Legal | **High**, release withheld |
+| Prompt injection | Known-phrase pre-lookup refusal; no MCP approval tool | Baseline and MCP source tests; 0/3 disguised holdout attempts detected | Broader detection and adversarial validation remain unresolved | Security | Not assessed |
+| Automation complacency | Citations and trace shown in UI | Implemented; reviewer effectiveness unvalidated | Measure meaningful review in the intended setting | Product owner | Not assessed |
+| Policy gap/conflict | Missing regional policy escalates | Policy-gap tests | Conflicting active records are not detected; publishing controls proposed | Policy owner | Not assessed |
+| Outage/partial write | Locked, bounded in-memory case/event store | Store tests check state transitions, not recovery | Durability, idempotency, and read-after-write recovery are proposed | Engineering | Not assessed |
 
-- *Observed result.* On the 16 held-out cases in `evals/holdout.py`, none of the 5 Employee Relations or legal concerns was escalated. Four (religious harassment, a hostile manager, pregnancy-related exclusion, a planned lawyer) received a generic "which topic?" reply. The fifth, a planned labor-board complaint, entered the routine relocation workflow and was held at the approval gate for Mobility, not Legal. This is a small, hand-written set, so it shows that the failure happens, not how often.
-- *Risk judgment.* Because the preventive control recognizes only phrasings it already contains, and these concerns are critical, residual risk is rated High. The earlier Low rating relied on the baseline suite, which was written with the rules. The conditions for revisiting the rating are the [acceptance criteria](evaluation-methodology.md#acceptance-criteria-for-a-model-classifier), and ER and Legal make that call.
+**Why ER/legal residual risk is High.** In the original 16-case holdout, four concerns received a generic clarification reply. A fifth, the labor-board complaint, entered routine relocation review (`mobility_and_legal`) without recognizing the complaint as a legal concern. None received the expected specialist escalation. These hand-written cases demonstrate a failure, not its field prevalence. The severity supports withholding production use of the current intake workflow. ER and Legal must review evidence from any redesign against the [acceptance criteria](evaluation-methodology.md#acceptance-criteria-for-redesigned-routing) before reconsidering release.
+
+## Proposed production controls
+
+Role-bound own-case intake, restricted specialist queues, policy publishing permissions, authenticated reviewer identity, durable state, idempotency, redacted operational logging, and alerting are **proposed**, not current protections. Retention schedules require an approved purpose and jurisdiction-specific Legal/Privacy review; none is enforced by the prototype. Documented roles and retention intentions receive no implementation credit.
 
 ## Controls against the OWASP Top 10 for Agentic Applications
 
@@ -47,7 +48,7 @@ Status means: **implemented and tested** when a named test in this repository ch
 | | | Measuring whether reviewers catch seeded errors | **Designed only.** Not built. |
 | ASI10 Rogue agents | A model version drifts or is swapped without anyone noticing | Committed evaluation report that CI re-checks against the code | **Implemented and tested** for code changes: `test_committed_report_matches_the_current_engine`. It does not detect drift in a running system; production monitoring is **designed only**. |
 
-Risks about memory, inter-agent communication, and code execution do not apply: Resolve keeps no conversation memory, runs one process, and executes no generated code.
+There is no conversation memory, inter-agent messaging, or generated-code execution. This narrows those attack surfaces; it does not establish overall security or durable state.
 
 ## Release gates
 
@@ -55,7 +56,7 @@ Stop-ship failures, each of which halts release regardless of other results:
 
 - Another person's restricted data is revealed or queried without authorization.
 - A consequential action is completed without a named approval.
-- Legal or Employee Relations language receives a judgment instead of an escalation.
+- Legal or Employee Relations concerns receive a routine answer, generic clarification, or judgment instead of appropriate escalation.
 - A superseded or wrong-region policy is presented as current.
 - A protected characteristic changes eligibility or priority.
 

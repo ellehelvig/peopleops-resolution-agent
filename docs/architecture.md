@@ -1,60 +1,34 @@
 # Architecture and tool specification
 
-## Operating boundary
+See the single [request-path diagram](../README.md#architecture). This document describes the implemented prototype and separately identifies production design intentions.
 
-The agent may classify, retrieve, compare, draft, create a pending case, and recommend. It may not approve leave, change employment records, make legal determinations, investigate ER allegations, set compensation, or disclose another employee’s data.
+## Current operating boundary
 
-### State and memory
+The engine classifies with keywords, reads synthetic employee and policy records through direct Python functions, drafts recommendations, and returns a result. API and MCP entry points save results. Approval changes case status only; no HR record change or specialist referral is executed. All caller identities and roles are unverified.
 
-| State | Contents | Boundary |
+### State and logging
+
+| State | Current contents and lifetime |
+|---|---|
+| Request | Caller-supplied text, employee ID, and API actor role; not authenticated |
+| Case | Result including decision trace, request, employee ID, and any review metadata; bounded to 250 cases in memory |
+| Events | `resolution_created`, `human_approved`, `human_rejected`; actor label, time, case ID, and event details; bounded to 500 in memory |
+| Policy | Synthetic records in `peopleops/data.py`; active/date/region filtering, then first match; no publishing service or conflict detection |
+| Trace | Engine-generated explanations in `decision_trace`, stored with the case; not a separate event per step |
+| Conversation memory | None |
+
+The API and optional MCP process each instantiate a separate store. Restart discards state. Creation events record status and policy IDs, not every read or the full policy version; citations in the case carry versions. MCP read tools emit no store events. The bootstrap UI also exposes synthetic names for persona selection; the engine lookup excludes names.
+
+### Optional MCP boundary
+
+| Tool | Actual input and behavior | Current boundary |
 |---|---|---|
-| Request state | Request text, authenticated employee ID, channel | Ends when the case is saved |
-| Case state | Decision, citations, approval status, reviewer events | Retained per case schedule |
-| Policy state | Immutable versions, effective dates, region, owner | Published only by policy owners |
-| Trace state | Tool names, latency, status, error class | Redacted; no sensitive payloads |
-| Conversation memory | None in the local baseline | Production memory must be case-scoped, not person-global |
+| `retrieve_policy` | Caller supplies topic and region; unsupported topic returns an empty list | Read-only, no caller authorization |
+| `get_employee_eligibility_fields` | Caller supplies employee ID; returns `id`, `region`, `country`, `employment_type`, `status`, `service_days`, `role_category`, `manager_id`; missing ID returns an error object | Field allowlist, not actor-bound access |
+| `create_case` | Request text and employee ID; runs the engine and saves its result | Engine determines status; no caller-supplied decision fields |
 
-### MCP tool contracts
+There is no MCP approval tool. The API decision route accepts only pending cases and a nonblank typed reviewer, once. Source-inspection tests protect the MCP surface; they do not constitute runtime MCP or authenticated authorization validation. API decisions do not operate on the separate MCP store.
 
-| Tool | Permission | Input | Output | Failure behavior |
-|---|---|---|---|---|
-| `retrieve_policy` | Read active policy | Topic, region | Active version(s) and rules | Empty result → human escalation |
-| `get_employee_eligibility_fields` | Read allowlisted HRIS view | Auth-bound employee ID | Region, status, service, type, role category | Missing/mismatch → clarification |
-| `create_case` | Create draft only | Request text and employee ID; the engine sets status, risk, citations, and the approval requirement | Case ID and resulting state | No downstream action |
+## Proposed production controls
 
-There is no approval tool. Any MCP tool can be called by the model on the other end of the connection, so exposing one that records a human decision would let the model approve its own recommendation. Approvals are recorded only through the reviewer UI and HTTP API. `tests/test_mcp_server.py` fails if an approval tool is added back or if `create_case` starts accepting decision fields from the caller.
-
-Production authorization is enforced in the tool/service layer, never delegated to the model. The self-service channel can read only the caller’s eligibility view. Reviewer roles can access cases assigned to their queue. Policy publishers cannot approve their own policy changes.
-
-## Resolution state machine
-
-```mermaid
-stateDiagram-v2
-  [*] --> SafetyScreen
-  SafetyScreen --> Refused: injection / unauthorized data
-  SafetyScreen --> Escalated: legal / ER concern
-  SafetyScreen --> Classified: supported request
-  SafetyScreen --> NeedsClarification: unsupported / ambiguous
-  Classified --> NeedsClarification: missing employee record
-  Classified --> PolicyCheck
-  PolicyCheck --> Escalated: no active regional policy / conflict
-  PolicyCheck --> Drafted: grounded determination
-  Drafted --> WaitingApproval: consequential action
-  WaitingApproval --> Approved: named reviewer approves
-  WaitingApproval --> Rejected: named reviewer rejects
-  Approved --> Resolved
-  Refused --> [*]
-  Escalated --> [*]
-  NeedsClarification --> [*]
-  Rejected --> [*]
-  Resolved --> [*]
-```
-
-## Error and rollback design
-
-- Retrieval timeout: retry read-only tools twice with jitter, then fail closed.
-- Write timeout: require idempotency key and read-after-write before retry.
-- Policy conflict: cite neither as authoritative; route to policy owner.
-- Model/schema failure: discard draft and use controlled fallback wording.
-- Bad release: feature-flag the new engine version off; preserve previous policy and prompt artifacts; replay a sampled redacted case set.
-- Approval expiry: close the pending action after its SLA; never auto-approve.
+Authenticated identities, role/row authorization, durable storage, idempotent writes and recovery, policy-owner publishing and conflict resolution, redacted operational logging, timeouts, expiry, and rollback procedures remain proposals. None should be inferred from current demo state transitions. See the [risk register](governance-and-risk.md) and [release evidence](evaluation-methodology.md).

@@ -17,5 +17,5 @@
 These are three different things.
 
 - **Metrics describe what the pilot observed.** Report median and distribution, not only averages, for completion time, rubric score, escalation, citations checked, and overrides. Label estimated time saved separately from observed time saved. Do not imply statistical significance from this sample.
-- **Acceptance criteria define what must be true before the next stage.** They are the [acceptance criteria](evaluation-methodology.md#acceptance-criteria-for-a-model-classifier) set before testing, including no critical-control failures. A pilot of this size cannot show that missed escalations are rare; it can show whether they occur.
+- **Acceptance criteria define what must be true before the next stage.** They are the [acceptance criteria](evaluation-methodology.md#acceptance-criteria-for-redesigned-routing) set before testing, including no critical-control failures. A pilot of this size cannot show that missed escalations are rare; it can show whether they occur.
 - **Risk owners decide what residual risk is acceptable.** Employee Relations, Legal, and the People Operations owner decide whether to proceed. No percentage makes that decision for them.

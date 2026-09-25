@@ -203,12 +203,11 @@
   function renderMetrics() {
     var m = state.metrics; var box = $('metrics'); clear(box);
     var rows = [
-      ['Total cases', m.total_cases, 'in this session'],
+      ['Total cases', m.total_cases, 'retained synthetic cases, including seeds'],
       ['Pending approvals', m.pending_approvals, 'waiting on a human'],
-      ['Completion rate', m.completion_rate + '%', 'resolved or approved'],
-      ['Escalation rate', m.escalation_rate + '%', 'routed to a specialist'],
-      ['Human override rate', m.human_override_rate + '%', 'observed'],
-      ['Estimated hours saved', m.estimated_hours_saved, 'assumes 14 min per case; an estimate, not a measure']
+      ['Completion rate', m.completion_rate + '%', 'resolved or approved / all retained cases'],
+      ['Escalation rate', m.escalation_rate + '%', 'escalated status / all retained cases; no referral sent'],
+      ['Cases with overrides', m.human_override_rate + '%', 'override flags / all retained cases, including seeds']
     ];
     rows.forEach(function (r) {
       var card = el('div', 'metric');
@@ -254,8 +253,8 @@
     var ho = ev.holdout;
     if (!ho) return;
     box.appendChild(el('h3', null, 'Held-out cases'));
-    box.appendChild(el('p', 'muted small', 'The same risks, phrased the way people write, and never used to tune the rules. ' +
-      'Reported, not gated. This is the gap a language-model classifier would need to close.'));
+    box.appendChild(el('p', 'muted small', 'Original held-out result: 0/16. Production use is withheld because critical concerns were missed. ' +
+      'Once used for development these cases become regression evidence; a redesign needs new unseen tests of harmful misses and excessive escalation.'));
     var hgrid = el('div', 'metrics');
     var htile = el('div', 'metric');
     htile.appendChild(el('div', 'label', 'Held-out pass rate'));

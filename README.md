@@ -8,7 +8,7 @@ A governed HR case workflow that carries a synthetic employee request from intak
 
 *20-second walkthrough on synthetic data. [Try the live demo](https://ellehelvig.github.io/peopleops-resolution-agent/): it runs entirely in your browser.*
 
-> **What this is.** A rules-based prototype with no language model in it. It is the part of an HR agent that should never be left to a model: safety screening, eligibility, policy selection, data minimization, and the human approval gate. A [held-out test](#how-far-the-rules-generalize) shows where keyword rules stop working, which is where a model would be added. Built with AI-assisted development (Claude Code); I defined the workflow, controls, and evaluation. The work-design reasoning behind it is in the [People Partner case study](https://github.com/ellehelvig/hr-ai-transformation-playbook/blob/main/01-use-cases/work-redesign-people-partner.md).
+> **What this is.** A rules-based prototype with no language model in it. It demonstrates keyword screening, deterministic eligibility and policy selection, data minimization, and an approval state. A [held-out test](#how-far-the-rules-generalize) exposes missed sensitive concerns; production use is withheld. A model is one possible redesign hypothesis, not an established solution. Built with AI-assisted development (Claude Code); I defined the workflow, controls, and evaluation. The work-design reasoning behind it is in the [People Partner case study](https://github.com/ellehelvig/hr-ai-transformation-playbook/blob/main/01-use-cases/work-redesign-people-partner.md).
 
 ## What works
 
@@ -69,28 +69,30 @@ The 60 baseline cases pass 60 of 60, but they were written alongside the keyword
 | A legitimate request was not recognized, so the employee was asked to clarify | 5 |
 | Negation misread ("I am not expecting a baby...") | 1 |
 
-The controls do what they say when they fire, and the approval gate contains what gets past them. Keyword rules cannot reliably recognize a concern described in someone's own words, and that is the job a language model should do here. A model version would need a much larger, independently written test set before its results meant much: even a perfect score on these 16 cases leaves a possible miss rate of 17%. See the [acceptance criteria](docs/evaluation-methodology.md#acceptance-criteria-for-a-model-classifier).
+**Release decision: production use is withheld.** The original 0/16 result demonstrates failures, not overall field accuracy. Four concerns get generic clarification; a fifth enters relocation review without recognizing the legal complaint. An approval gate does not repair missed specialist routing. Preserve this result; after these cases influence development they become regression evidence. A redesign needs a new unseen set covering hidden risks, harmful misses, and excessive escalation. No particular technology is assumed to solve the problem. See the [acceptance criteria](docs/evaluation-methodology.md#acceptance-criteria-for-redesigned-routing).
 
 ## Architecture
 
 ```mermaid
 flowchart LR
-  U[Employee request] --> G[Safety screen<br/>keyword rules]
-  G -- injection or privacy --> RF[Refused, no data touched]
-  G -- ER or legal --> ES[Escalated to specialist]
-  G --> I[Intent<br/>keyword rules]
-  I -- no match --> CL[Ask to clarify]
-  I --> H[Eligibility fields only<br/>from synthetic HRIS]
-  H --> P[Active regional policy<br/>with citation]
-  P --> D[Draft recommendation]
-  D --> R{{Named human approval}}
-  R --> L[Case ledger and audit log]
-  RF & ES --> L
+  U[Untrusted request and supplied identity] --> A[API: local HTTP or browser Pyodide]
+  A --> E[Python engine: keyword screens and routing]
+  E --> D[Direct Python calls: public_employee and active_policies]
+  D --> S[Synthetic records: field allowlist and regional policies]
+  E --> C[Result with decision_trace and proposed action]
+  C --> K[API in-memory CaseStore: bounded cases and events]
+  R[Typed reviewer: not authenticated] --> A
+  A --> G[decide: pending only; approve or reject]
+  G --> K
+  M[Optional MCP client: untrusted arguments] --> T[Three stdio tools; no approval tool]
+  T -- read tools --> D
+  T -- create_case --> E
+  T -- save result --> MK[Separate MCP in-memory CaseStore]
 ```
 
-Every box is ordinary Python in `peopleops/engine.py`. The MCP server exposes three of these steps as tools for an external model to call; the demo calls them directly.
+The API calls the engine directly, not through MCP. Engine results contain a decision trace; stores emit only creation and human-decision events. Read-only MCP calls have no event logging. The allowlist limits fields, but caller identity is not bound to records. Stores are ephemeral; no HR action or specialist notification is executed. See [architecture details](docs/architecture.md) for these boundaries.
 
-**Where a model would go.** A proposed next version would use a language model for two jobs keyword rules do badly: recognizing intent and sensitivity in free text, and drafting the reply in plain language. Eligibility, authorization, policy selection, and approval stay in code, because they must be reproducible and auditable. The model's output would be a structured classification that the code validates, not an action. See the [technical walkthrough](TECHNICAL-WALKTHROUGH.md).
+**Redesign hypothesis.** A model could help classify language or draft a response, but whether it improves safety and service must be tested against alternatives and new unseen cases. Reproducible eligibility, policy selection, access enforcement, and approval controls remain explicit. See the [technical walkthrough](TECHNICAL-WALKTHROUGH.md).
 
 ## Repository map
 
@@ -112,7 +114,7 @@ Every box is ordinary Python in `peopleops/engine.py`. The MCP server exposes th
 
 ## Production path
 
-Replace in-memory stores with a row-level-secured database; authenticate employee and reviewer identities; put write tools behind durable approval state; encrypt case fields; export redacted observability events; add policy-owner publishing workflow; and validate any model-enabled version against the baseline and held-out sets before release. See [docs/architecture.md](docs/architecture.md) and [docs/governance-and-risk.md](docs/governance-and-risk.md). A [pilot plan](docs/pilot-plan.md) separates what a pilot would measure from what must be true to proceed.
+Replace in-memory stores with a row-level-secured database; authenticate employee and reviewer identities; put write tools behind durable approval state; encrypt case fields; export redacted observability events; add policy-owner publishing workflow; and validate any redesign against regression cases and a new unseen held-out set before release. See [docs/architecture.md](docs/architecture.md) and [docs/governance-and-risk.md](docs/governance-and-risk.md). A [pilot plan](docs/pilot-plan.md) separates what a pilot would measure from what must be true to proceed.
 
 Out of scope until separately governed: candidate ranking, performance ratings, compensation recommendations, discipline or termination, medical inference, employee monitoring, and autonomous employment actions.
 

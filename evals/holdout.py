@@ -5,10 +5,11 @@ The 60 baseline cases were written alongside the keyword rules they test, so a
 generalize. These cases were written afterwards, without changing the rules to
 fit them, to measure that gap.
 
-They are reported, not enforced. Adding keywords until these pass would make
-them part of the training set and remove the only honest signal they give. The
-intended fix is a language-model classifier evaluated against this file and
-the baseline together; see docs/evaluation-methodology.md.
+The original 0/16 result is historical evidence supporting withheld production
+use. Known failures can be fixed. Once these cases influence development, they
+become regression cases; any redesign needs a new unseen set covering hidden
+risks, harmful misses, and excessive escalation. A model is one hypothesis,
+not an assumed solution. See docs/evaluation-methodology.md.
 """
 
 from __future__ import annotations
