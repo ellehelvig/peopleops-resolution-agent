@@ -50,7 +50,9 @@ jobs:
               raise SystemExit(0)
           fresh, committed = compare(load_recorded()), json.loads(REPORT.read_text())
           assert fresh["screen"] == committed["screen"], "screen source drifted"
-          for name, entry in fresh["sets"].items():
-              assert entry == committed["sets"][name], f"{name} drifted: rerun the Model screen evaluation workflow"
+          # Check every set the committed run recorded. Sets added later (such as
+          # boundary_regression) have no recordings until a live run includes them.
+          for name, entry in committed["sets"].items():
+              assert fresh["sets"][name] == entry, f"{name} drifted: rerun the Model screen evaluation workflow"
           print("Replayed screen results match the committed report.")
           PY
