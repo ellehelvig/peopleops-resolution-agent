@@ -8,7 +8,7 @@ A governed HR case workflow that carries a synthetic employee request from intak
 
 *20-second walkthrough on synthetic data. [Try the live demo](https://ellehelvig.github.io/peopleops-resolution-agent/): it runs entirely in your browser.*
 
-> **What this is.** A rules-based prototype with no language model in it. It demonstrates keyword screening, deterministic eligibility and policy selection, data minimization, and an approval state. A [held-out test](#how-far-the-rules-generalize) exposes missed sensitive concerns; production use is withheld. A model is one possible redesign hypothesis, not an established solution. Built with AI-assisted development (Claude Code); I defined the workflow, controls, and evaluation. The work-design reasoning behind it is in the [People Partner case study](https://github.com/ellehelvig/hr-ai-transformation-playbook/blob/main/01-use-cases/work-redesign-people-partner.md).
+> **What this is.** A governed HR workflow with deterministic rules and an optional language-model screening layer. Eligibility, policy selection, data minimization, and approval controls remain explicit code; the model can only add routing to a person and cannot approve an outcome. The original rules-only evaluation exposed missed sensitive concerns, and the first untuned model-screen run is preserved as historical evidence. Production use remains withheld pending practitioner-written private evaluation. Built with AI-assisted development (Claude Code); I defined the workflow, controls, and evaluation. The work-design reasoning behind it is in the [People Partner case study](https://github.com/ellehelvig/hr-ai-transformation-playbook/blob/main/01-use-cases/work-redesign-people-partner.md).
 
 ## What works
 
@@ -56,7 +56,7 @@ python3 -m evals.compare                    # rules alone vs. rules plus model s
 
 The live demo has no server. GitHub Pages serves the page, and the page runs this repository's Python in the visitor's browser through [Pyodide](https://pyodide.org/). Both ways of running the app call one handler, `peopleops/api.py`: `server.py` wraps it in HTTP for local use, and `web/in-browser-api.js` calls it directly in the browser. So the demo runs exactly the code the tests and evaluations check, each visitor gets a private session, and nothing they type leaves their browser. The first visit takes a few seconds while Python loads; later visits are cached.
 
-The evaluation command writes `evals/latest_report.json`. That file is committed on purpose: CI recomputes the baseline and fails if the committed report no longer matches the engine, so the evidence can't drift from the code. Results are evidence about this deterministic baseline, not claims about an untested LLM configuration.
+The baseline evaluation writes `evals/latest_report.json`. Model-screen runs write `evals/screen_report.json` and `evals/screen_recordings.json`; the first untuned run is also archived under `evals/runs/2026-10-01-untuned/` so later tuning cannot erase it. CI checks the committed deterministic baseline and recorded model replay against the code. Results are scoped evidence about the tested configuration, not proof of production reliability.
 
 ## How far the rules generalize
 
