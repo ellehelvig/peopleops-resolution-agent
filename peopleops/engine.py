@@ -9,6 +9,7 @@ from dataclasses import dataclass, asdict
 from typing import Any
 
 from .data import active_policies, public_employee
+from .screen import Screen
 
 
 INTENTS = {
@@ -45,7 +46,14 @@ class Resolution:
 
 
 class ResolutionEngine:
-    """A fail-closed reference engine suitable for deterministic evaluation."""
+    """A fail-closed reference engine suitable for deterministic evaluation.
+
+    With a screen, the engine runs the layered design: keyword rules first, then
+    the screen, which can only add routing to a person. See peopleops/screen.py.
+    """
+
+    def __init__(self, screen: Screen | None = None) -> None:
+        self.screen = screen
 
     def resolve(self, request: str, employee_id: str, actor_role: str = "employee", case_id: str | None = None) -> dict[str, Any]:
         started = time.perf_counter()
@@ -65,15 +73,50 @@ class ResolutionEngine:
                 "Use the authorized HR service channel if there is a legitimate business need.", False, None, [], trace + ["Blocked sensitive-data request before employee lookup."], [], started, ["unauthorized_sensitive_data"])
 
         intent, basis = self._classify(normalized)
+        screened = self.screen.screen(request) if self.screen else None
+        signals = set(screened.signals) if screened else set()
+        if screened:
+            trace.append(f"Model screen ({screened.source}) returned a route; it saw the request text only.")
+            if screened.intent != "unknown" and screened.intent != intent:
+                trace.append(f"Screen read the topic as {screened.intent}; keyword rules read {intent}. Using the screen's reading; a person still approves.")
+                intent, basis = screened.intent, "model screen: topic"
+
+        if "prompt_injection" in signals:
+            return self._finish(case_id, "refused", "unknown", "critical", "model screen: prompt injection",
+                "I can’t follow instructions that attempt to override security or expose internal configuration. I can still help with an HR policy question.",
+                "Log the security event; take no HR action.", False, None, [], trace + ["Screen detected an injection attempt; stopped before tool access."], [], started, ["prompt_injection"])
+
+        if "unauthorized_sensitive_data" in signals:
+            return self._finish(case_id, "refused", "privacy_request", "critical", "model screen: sensitive data request",
+                "I can’t provide or retrieve another person’s sensitive employment information.",
+                "Use the authorized HR service channel if there is a legitimate business need.", False, None, [], trace + ["Screen detected a request for another person's data; blocked before employee lookup."], [], started, ["unauthorized_sensitive_data"])
+
+        if signals & {"employee_relations", "safety"}:
+            return self._finish(case_id, "escalated", intent, "critical", "model screen: Employee Relations signal",
+                "This request may involve a sensitive workplace concern. I won’t investigate or make a determination here. An Employee Relations specialist should review it.",
+                "Create a restricted Employee Relations referral; do not notify the named manager automatically.", True, "employee_relations", [], trace + ["Screen detected a workplace concern; suppressed routine workflow."], [], started, ["employee_relations"])
+
         if any(term in normalized for term in ER_TERMS):
             return self._finish(case_id, "escalated", intent, "critical", "safety rule: Employee Relations trigger",
                 "This request may involve a sensitive workplace concern. I won’t investigate or make a determination here. An Employee Relations specialist should review it.",
                 "Create a restricted Employee Relations referral; do not notify the named manager automatically.", True, "employee_relations", [], trace + ["Detected an Employee Relations trigger; suppressed routine workflow."], [], started, ["employee_relations"])
 
-        if any(term in normalized for term in LEGAL_TERMS):
-            return self._finish(case_id, "escalated", intent, "critical", "safety rule: legal language",
+        if any(term in normalized for term in LEGAL_TERMS) or "legal" in signals:
+            source = "safety rule: legal language" if any(term in normalized for term in LEGAL_TERMS) else "model screen: legal signal"
+            return self._finish(case_id, "escalated", intent, "critical", source,
                 "Because your request mentions a legal matter, it needs review by the appropriate People and Legal teams.",
-                "Route to Legal/Employee Relations without offering a legal conclusion.", True, "legal", [], trace + ["Detected legal-risk language; no eligibility determination made."], [], started, ["legal_review"])
+                "Route to Legal/Employee Relations without offering a legal conclusion.", True, "legal", [], trace + ["Detected legal-risk context; no eligibility determination made."], [], started, ["legal_review"])
+
+        if "health_or_accommodation" in signals:
+            return self._finish(case_id, "escalated", intent, "high", "model screen: health or accommodation context",
+                "Your request may involve health or accommodation needs, so a People Partner will handle it personally. Your manager will only be told what their role requires, such as an approved schedule, not the reason.",
+                "Route to a People Partner or accommodations specialist; do not share the reason with the manager.", True, "people_partner", [], trace + ["Screen detected context that changes which process applies; routine workflow suppressed. No reason recorded in the case."], [], started, ["sensitive_context"])
+
+        if screened and (screened.error or screened.uncertain):
+            flag = "screen_unavailable" if screened.error else "screen_uncertain"
+            return self._finish(case_id, "escalated", intent, "high", f"model screen: {flag.replace('_', ' ')}",
+                "A People Partner will review your request before anything else happens.",
+                "Route to a People Partner for review; the screen could not confirm the request is routine.", True, "people_partner", [], trace + [f"Screen {'failed' if screened.error else 'was unsure'}; failed closed to a person."], [], started, [flag])
 
         if intent == "unknown":
             return self._finish(case_id, "needs_clarification", intent, "low", basis,

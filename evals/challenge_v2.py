@@ -7,8 +7,8 @@ Provenance, stated plainly so nobody reads more into a result than it supports:
   independence this set has.
 - It does NOT meet acceptance criterion 1 in docs/evaluation-methodology.md,
   which requires a private set written by Employee Relations and Legal
-  practitioners who do not tune the classifier. Use evals/private_set.py for
-  that set. A good score here is early signal, not acceptance evidence.
+  practitioners who do not tune the classifier. Load that set with
+  RESOLVE_PRIVATE_SET; evals/private_set.example.json shows the format. A good score here is early signal, not acceptance evidence.
 - Once any result on this set is used to change the screen or the rules, the
   set becomes regression evidence and a newer unseen set is needed.
 

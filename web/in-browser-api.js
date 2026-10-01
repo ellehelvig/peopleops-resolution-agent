@@ -9,7 +9,7 @@
 
   var PYODIDE = 'https://cdn.jsdelivr.net/pyodide/v0.29.5/full/';
   // Every module in peopleops/. tests/test_api.py fails if this list drifts.
-  var MODULES = ['__init__.py', 'api.py', 'data.py', 'engine.py', 'store.py'];
+  var MODULES = ['__init__.py', 'api.py', 'data.py', 'engine.py', 'screen.py', 'store.py'];
 
   function loadScript(src) {
     return new Promise(function (resolve, reject) {

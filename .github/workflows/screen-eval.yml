@@ -1,0 +1,75 @@
+name: Model screen evaluation
+
+# Runs the layered design (keyword rules plus the Claude screen) on every case
+# set and opens a pull request with the report and the recorded screen results.
+# Manual only: each run calls the Anthropic API and costs money.
+#
+# Setup: add a repository secret named ANTHROPIC_API_KEY
+# (Settings > Secrets and variables > Actions > New repository secret).
+# To include the private practitioner set, add its JSON as a second secret
+# named RESOLVE_PRIVATE_SET_JSON. Only counts from it reach the report.
+
+on:
+  workflow_dispatch:
+    inputs:
+      model:
+        description: Claude model for the screen
+        required: true
+        default: claude-opus-5-5
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  screen-eval:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+
+      - name: Install the Anthropic SDK
+        run: pip install "anthropic>=1.11,<2"
+
+      - name: Run rules alone and rules plus screen
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          RESOLVE_SCREEN_MODEL: ${{ inputs.model }}
+          PRIVATE_SET_JSON: ${{ secrets.RESOLVE_PRIVATE_SET_JSON }}
+        run: |
+          if [ -z "$ANTHROPIC_API_KEY" ]; then
+            echo "::error::Add a repository secret named ANTHROPIC_API_KEY first."
+            exit 1
+          fi
+          if [ -n "$PRIVATE_SET_JSON" ]; then
+            printf '%s' "$PRIVATE_SET_JSON" > "$RUNNER_TEMP/private_set.json"
+            export RESOLVE_PRIVATE_SET="$RUNNER_TEMP/private_set.json"
+          fi
+          python -m evals.compare --screen anthropic | tee "$RUNNER_TEMP/summary.txt"
+
+      - name: Open a pull request with the results
+        env:
+          GH_TOKEN: ${{ github.token }}
+          MODEL: ${{ inputs.model }}
+        run: |
+          branch="screen-eval/${GITHUB_RUN_ID}"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -b "$branch"
+          git add evals/screen_report.json evals/screen_recordings.json
+          git commit -m "Record model screen evaluation (${MODEL})"
+          git push origin "$branch"
+          {
+            echo "Model screen evaluation with \`${MODEL}\`, run ${GITHUB_RUN_ID}."
+            echo
+            echo '```'
+            cat "$RUNNER_TEMP/summary.txt"
+            echo '```'
+            echo
+            echo "challenge_v2 is developer-written and does not meet acceptance criterion 1. Review every harmful miss before drawing conclusions."
+          } > "$RUNNER_TEMP/body.md"
+          gh pr create --base main --head "$branch" --title "Record model screen evaluation (${MODEL})" --body-file "$RUNNER_TEMP/body.md"
