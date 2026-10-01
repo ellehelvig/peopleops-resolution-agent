@@ -149,6 +149,6 @@ class ResolutionEngine:
                 answer: str, action: str, approval: bool, role: str | None,
                 citations: list[dict[str, str]], trace: list[str], data_accessed: list[str],
                 started: float, flags: list[str]) -> dict[str, Any]:
-        latency = max(8, int((time.perf_counter() - started) * 1000))
+        latency = int((time.perf_counter() - started) * 1000)
         return Resolution(case_id, status, intent, risk, routing_basis, answer, action, approval,
                           role, citations, trace, data_accessed, latency, flags).to_dict()

@@ -49,6 +49,8 @@ class CaseStore:
             if case.get("status") != "waiting_approval":
                 raise ValueError("Only cases waiting for approval can be decided.")
             case["status"] = "approved" if decision == "approve" else "rejected"
+            # A rejection is a person overriding the system's recommendation.
+            case["human_override"] = decision == "reject"
             case["reviewer"] = reviewer.strip()
             case["review_note"] = note
             case["reviewed_at"] = datetime.now(timezone.utc).isoformat()
@@ -63,8 +65,6 @@ class CaseStore:
             "total_cases": len(rows),
             "completion_rate": round(100 * len(resolved) / len(rows), 1) if rows else 0,
             "escalation_rate": round(100 * sum(r.get("status") == "escalated" for r in rows) / len(rows), 1) if rows else 0,
-            "median_minutes": 7.0,
-            "estimated_hours_saved": round(len(rows) * 14 / 60, 1),
             "human_override_rate": round(100 * sum(bool(r.get("human_override")) for r in rows) / len(rows), 1) if rows else 0,
             "pending_approvals": sum(r.get("status") == "waiting_approval" for r in rows),
             "approval_cases": len(approvals),

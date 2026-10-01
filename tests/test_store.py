@@ -1,8 +1,9 @@
-"""Approval invariants must hold for both HTTP and MCP callers."""
+"""Approval invariants. Only the reviewer UI and HTTP API can record a decision."""
 
 import unittest
 from concurrent.futures import ThreadPoolExecutor
 
+from peopleops.engine import ResolutionEngine
 from peopleops.store import CaseStore
 
 
@@ -36,6 +37,15 @@ class StoreTests(unittest.TestCase):
             outcomes = list(pool.map(decide, ["approve", "reject"]))
         self.assertEqual(sum(row is not None for row in outcomes), 1)
         self.assertEqual(len(store.audit), 1)
+
+    def test_rejection_counts_as_a_human_override(self):
+        store = CaseStore()
+        result = ResolutionEngine().resolve("Can I work remotely?", "E-1001")
+        store.save(result)
+        before = store.metrics()["human_override_rate"]
+        store.decide(result["case_id"], "reject", "Demo People Partner")
+        self.assertTrue(store.cases[result["case_id"]]["human_override"])
+        self.assertGreater(store.metrics()["human_override_rate"], before)
 
     def test_returned_cases_cannot_mutate_the_store(self):
         store = CaseStore()
