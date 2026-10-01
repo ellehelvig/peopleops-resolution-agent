@@ -4,11 +4,14 @@ from __future__ import annotations
 
 import json
 import unittest
+import unittest.mock
 from types import SimpleNamespace
 
 from evals.compare import miss_type
 from peopleops.engine import ResolutionEngine
-from peopleops.screen import AnthropicScreen, ScreenResult, failed, parse
+import subprocess
+
+from peopleops.screen import AnthropicScreen, ClaudeCodeScreen, ScreenResult, failed, parse
 
 
 class FixedScreen:
@@ -140,6 +143,44 @@ class AnthropicScreenTests(unittest.TestCase):
         for messages in cases:
             result = AnthropicScreen(model="m", client=fake_client(messages)).screen("text")
             self.assertIsNotNone(result.error)
+
+
+class ClaudeCodeScreenTests(unittest.TestCase):
+    def runner(self, stdout="", returncode=0, exc=None):
+        calls = []
+
+        def run(cmd, **kwargs):
+            calls.append((cmd, kwargs))
+            if exc:
+                raise exc
+            return SimpleNamespace(returncode=returncode, stdout=stdout, stderr="")
+        return run, calls
+
+    def test_runs_headless_with_no_tools_and_no_api_key(self):
+        payload = {"signals": ["legal"], "uncertain": False, "intent": "relocation"}
+        run, calls = self.runner(json.dumps({"type": "result", "is_error": False, "structured_output": payload}))
+        with unittest.mock.patch.dict("os.environ", {"ANTHROPIC_API_KEY": "sk-should-not-pass"}):
+            result = ClaudeCodeScreen(model="claude-opus-5-5", binary="claude", run=run).screen("I'll sue")
+        self.assertEqual(result.signals, ("legal",))
+        self.assertEqual(result.source, "claude-code:claude-opus-5-5")
+        cmd, kwargs = calls[0]
+        self.assertEqual(cmd[cmd.index("--tools") + 1], "")
+        self.assertIn("--system-prompt", cmd)
+        self.assertIn("--json-schema", cmd)
+        self.assertNotIn("ANTHROPIC_API_KEY", kwargs["env"])
+        self.assertIn("I'll sue", kwargs["input"])
+
+    def test_reads_result_text_when_no_structured_output(self):
+        payload = {"signals": [], "uncertain": False, "intent": "remote_work"}
+        run, _ = self.runner(json.dumps({"is_error": False, "result": json.dumps(payload)}))
+        self.assertEqual(ClaudeCodeScreen(model="m", binary="claude", run=run).screen("x").intent, "remote_work")
+
+    def test_failures_fail_closed(self):
+        cases = [self.runner(exc=FileNotFoundError()), self.runner(exc=subprocess.TimeoutExpired("claude", 300)),
+                 self.runner(returncode=1), self.runner("not json"), self.runner(json.dumps({"is_error": True})),
+                 self.runner(json.dumps({"result": "[]"}))]
+        for run, _ in cases:
+            self.assertIsNotNone(ClaudeCodeScreen(model="m", binary="claude", run=run).screen("x").error)
 
 
 class MissTypeTests(unittest.TestCase):

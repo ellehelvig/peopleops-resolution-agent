@@ -1,7 +1,8 @@
 """Compare keyword rules alone with rules plus the model screen, on every case set.
 
     python -m evals.compare                      # rules only, plus replay of recorded screen results
-    python -m evals.compare --screen anthropic   # live run; needs ANTHROPIC_API_KEY and `pip install anthropic`
+    python -m evals.compare --screen claude-code # live run on your Claude plan; needs the `claude` CLI, signed in
+    python -m evals.compare --screen anthropic   # live run on API credits; needs ANTHROPIC_API_KEY and `pip install anthropic`
 
 A live run records each screen result to evals/screen_recordings.json, so CI
 can replay the exact run offline and check that the committed report matches.
@@ -30,7 +31,7 @@ from pathlib import Path
 
 from evals import challenge_v2, dataset, holdout
 from peopleops.engine import ResolutionEngine
-from peopleops.screen import AnthropicScreen, RecordedScreen, ScreenResult
+from peopleops.screen import AnthropicScreen, ClaudeCodeScreen, RecordedScreen, ScreenResult
 
 HERE = Path(__file__).parent
 RECORDINGS = HERE / "screen_recordings.json"
@@ -92,10 +93,13 @@ class RecordingScreen:
     """Wrap a live screen and keep each result so the run can be replayed offline."""
 
     def __init__(self, inner) -> None:
-        self.inner, self.source, self.recordings = inner, inner.source, {}
+        self.inner, self.source, self.recordings, self._cache = inner, inner.source, {}, {}
 
     def screen(self, request: str) -> ScreenResult:
-        result = self.inner.screen(request)
+        if request in self._cache:  # Each set is scored twice; screen each request once.
+            return self._cache[request]
+        result = self._cache[request] = self.inner.screen(request)
+        print(f"  screened {len(self._cache)} requests", end="\r", flush=True)
         self.recordings[request] = ({"signals": list(result.signals), "uncertain": result.uncertain, "intent": result.intent}
                                     if result.error is None else {"error": result.error})
         return result
@@ -124,10 +128,12 @@ def compare(screen) -> dict:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("--screen", choices=("recorded", "anthropic", "none"), default="recorded")
+    parser.add_argument("--screen", choices=("recorded", "claude-code", "anthropic", "none"), default="recorded")
     args = parser.parse_args()
     if args.screen == "anthropic":
         screen = RecordingScreen(AnthropicScreen())
+    elif args.screen == "claude-code":
+        screen = RecordingScreen(ClaudeCodeScreen())
     elif args.screen == "recorded":
         screen = load_recorded()
     else:
