@@ -50,7 +50,7 @@ The screen does not infer medical conditions. It notices that an employee has me
 | Challenge v2 (47) | Developer, before the screen | Frozen in its own commit | Early signal. Does not meet criterion 1. |
 | Private | ER and Legal practitioners | Not yet written | The only set that can meet the acceptance criteria. Counts only are reported. |
 
-Rules alone on challenge v2: 10 of 47 pass, with 31 harmful misses and no over-escalations. No model result is reported until the workflow has run with a real API key. Recorded screen results are committed so CI can replay them; any prompt or model change requires a new recorded run.
+Rules alone on challenge v2: 10 of 47 pass, with 31 harmful misses and no over-escalations. No model result is reported until the screen has run on a real model, either locally through the Claude Code CLI (`python -m evals.compare --screen claude-code`) or through the API workflow. Recorded screen results are committed so CI can replay them; any prompt or model change requires a new recorded run.
 
 ## Acceptance criteria for redesigned routing
 

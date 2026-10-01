@@ -18,6 +18,8 @@ from __future__ import annotations
 
 import json
 import os
+import shutil
+import subprocess
 from dataclasses import dataclass
 from typing import Protocol
 
@@ -138,6 +140,53 @@ class AnthropicScreen:
             payload = json.loads(text) if text else None
         except json.JSONDecodeError:
             payload = None
+        if not isinstance(payload, dict):
+            return failed(self.source, "unparseable output")
+        return parse(payload, self.source)
+
+
+class ClaudeCodeScreen:
+    """Screen requests by running the Claude Code CLI headless, billed to a Claude plan.
+
+    Runs `claude -p` with the screen's system prompt in place of Claude Code's
+    own, all tools disabled, and the same JSON schema as AnthropicScreen. Any
+    ANTHROPIC_API_KEY is removed from the child environment so the run uses the
+    signed-in Claude subscription, not API credits. Usage counts toward that
+    plan's limits.
+    """
+
+    def __init__(self, model: str | None = None, binary: str | None = None, run=subprocess.run) -> None:
+        self.model = model or os.environ.get("RESOLVE_SCREEN_MODEL", DEFAULT_MODEL)
+        self.binary = binary or shutil.which("claude") or "claude"
+        self._run = run
+
+    @property
+    def source(self) -> str:
+        return f"claude-code:{self.model}"
+
+    def command(self) -> list[str]:
+        return [self.binary, "-p", "--model", self.model, "--system-prompt", SYSTEM_PROMPT, "--tools", "",
+                "--json-schema", json.dumps(OUTPUT_SCHEMA), "--output-format", "json",
+                "--no-session-persistence", "--strict-mcp-config"]
+
+    def screen(self, request: str) -> ScreenResult:
+        env = {k: v for k, v in os.environ.items() if k not in {"ANTHROPIC_API_KEY", "ANTHROPIC_AUTH_TOKEN"}}
+        try:
+            done = self._run(self.command(), input=f"<employee_request>\n{request}\n</employee_request>",
+                             capture_output=True, text=True, timeout=300, env=env)
+        except (OSError, subprocess.SubprocessError) as exc:  # Missing CLI or a hang sends it to a person.
+            return failed(self.source, f"cli error: {type(exc).__name__}")
+        if done.returncode != 0:
+            return failed(self.source, f"cli exit {done.returncode}")
+        try:
+            envelope = json.loads(done.stdout)
+            if envelope.get("is_error"):
+                return failed(self.source, "cli reported an error")
+            payload = envelope.get("structured_output")
+            if not isinstance(payload, dict):
+                payload = json.loads(envelope.get("result") or "")
+        except (json.JSONDecodeError, AttributeError, TypeError):
+            return failed(self.source, "unparseable output")
         if not isinstance(payload, dict):
             return failed(self.source, "unparseable output")
         return parse(payload, self.source)
