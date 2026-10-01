@@ -32,6 +32,26 @@ Current result: **0 of 16 pass.** Each miss is classified by what it would mean 
 
 What this shows: the deterministic controls behave predictably where they fire, the approval gate contains the failures that reach it, and keyword matching cannot reliably recognize a workplace concern described in someone's own words. Production use of this intake workflow is withheld because missed concerns can leave employees without appropriate support. A redesign must address the broader hidden-risk failure class, including sensitive concerns embedded in ordinary requests. Rules, a model, a human intake path, or a combination are hypotheses to evaluate, not assumed solutions. Eligibility, access enforcement, and approval boundaries remain explicit. The 0/16 result is not an estimate of overall field accuracy.
 
+## Model screen evaluation
+
+The first redesign hypothesis is the layered design from the playbook's People Partner work redesign: keyword rules, then a model screen that can only add routing to a person. Rules stop what they recognize; the screen may refuse, escalate to Employee Relations or Legal, or route health and accommodation context to a People Partner. It cannot clear a request. Errors, refusals, and uncertainty go to a person. Tests in `tests/test_screen.py` hold the screen to these properties.
+
+The screen does not infer medical conditions. It notices that an employee has mentioned health context and routes the request to a person, recording no reason in the case.
+
+`python -m evals.compare` reports each set under two configurations, rules alone and rules plus the screen, with two failure directions counted separately:
+
+- **Harmful misses:** `not_escalated`, `stopped_but_not_flagged`, and `reached_workflow_behind_approval_gate`.
+- **Over-escalations:** a routine request sent to a specialist. Negative controls with loaded words ("dying to know", a lawyer friend) measure this.
+
+| Set | Written by | Status | What a result means |
+|---|---|---|---|
+| Regression (60) | Developer, with the rules | Passing | The screen must not break it. |
+| Holdout v1 (16) | Developer, after the rules | Shaped the redesign | Regression evidence only. |
+| Challenge v2 (47) | Developer, before the screen | Frozen in its own commit | Early signal. Does not meet criterion 1. |
+| Private | ER and Legal practitioners | Not yet written | The only set that can meet the acceptance criteria. Counts only are reported. |
+
+Rules alone on challenge v2: 10 of 47 pass, with 31 harmful misses and no over-escalations. No model result is reported until the workflow has run with a real API key. Recorded screen results are committed so CI can replay them; any prompt or model change requires a new recorded run.
+
 ## Acceptance criteria for redesigned routing
 
 A perfect score on a small, hand-written set does not establish a field miss rate. Statistical confidence bounds require an appropriate independent sampling design, which this challenge set does not provide. Acceptance rests on coverage, severity, sampling design, and monitoring together.

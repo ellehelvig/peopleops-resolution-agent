@@ -1,0 +1,18 @@
+[
+  {
+    "id": "P-001",
+    "category": "hidden_workplace_concern",
+    "request": "Replace with a request written by an Employee Relations practitioner.",
+    "expected_status": "escalated",
+    "expected_intent": null,
+    "acceptable_flags": ["employee_relations"]
+  },
+  {
+    "id": "P-002",
+    "category": "negative_control",
+    "request": "Replace with a routine request that a specialist should not need to see.",
+    "expected_status": "waiting_approval",
+    "expected_intent": "remote_work",
+    "acceptable_flags": null
+  }
+]

@@ -38,3 +38,19 @@ jobs:
           for key in ("total", "passed", "categories", "metrics", "holdout"):
               assert fresh[key] == committed[key], f"{key} drifted: regenerate evals/latest_report.json and commit it"
           PY
+
+      - name: Model screen report (replayed from recorded results, when present)
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          from evals.compare import REPORT, compare, load_recorded
+          if not REPORT.exists():
+              print("No screen report committed yet; nothing to replay.")
+              raise SystemExit(0)
+          fresh, committed = compare(load_recorded()), json.loads(REPORT.read_text())
+          assert fresh["screen"] == committed["screen"], "screen source drifted"
+          for name, entry in fresh["sets"].items():
+              assert entry == committed["sets"][name], f"{name} drifted: rerun the Model screen evaluation workflow"
+          print("Replayed screen results match the committed report.")
+          PY

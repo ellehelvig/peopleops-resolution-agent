@@ -47,8 +47,9 @@ Open the [live demo](https://ellehelvig.github.io/peopleops-resolution-agent/). 
 Run the tests and evaluation baseline:
 
 ```bash
-python3 -m unittest discover -s tests -v   # workflow, safety, privacy, HTTP contract, MCP surface, and eval-drift tests
+python3 -m unittest discover -s tests -v   # workflow, safety, privacy, HTTP contract, MCP surface, model screen, and eval-drift tests
 python3 -m evals.run                        # 60 baseline cases plus 16 held-out cases
+python3 -m evals.compare                    # rules alone vs. rules plus model screen, on every set
 ```
 
 ### How the live demo runs
@@ -70,6 +71,12 @@ The 60 baseline cases pass 60 of 60, but they were written alongside the keyword
 | Negation misread ("I am not expecting a baby...") | 1 |
 
 **Release decision: production use is withheld.** The original 0/16 result demonstrates failures, not overall field accuracy. Four concerns get generic clarification; a fifth enters relocation review without recognizing the legal complaint. An approval gate does not repair missed specialist routing. Preserve this result; after these cases influence development they become regression evidence. A redesign needs a new unseen set covering hidden risks, harmful misses, and excessive escalation. No particular technology is assumed to solve the problem. See the [acceptance criteria](docs/evaluation-methodology.md#acceptance-criteria-for-redesigned-routing).
+
+### Testing a model screen
+
+The first redesign hypothesis is now built and ready to measure. An optional Claude screen ([`peopleops/screen.py`](peopleops/screen.py)) runs after the keyword rules and can only send a request to a person: it can refuse, escalate, or flag health or accommodation context, but it can never clear a request the rules stopped. If it errors, refuses, or is unsure, the request goes to a person. It sees the request text only, never the employee record, and returns a route, never a diagnosis or quoted text. Without a screen, the engine and the demo behave exactly as before.
+
+[`evals/compare.py`](evals/compare.py) runs rules alone and rules plus the screen on every set, counting harmful misses and over-escalations separately. A new 47-case set, [`evals/challenge_v2.py`](evals/challenge_v2.py), was committed before any screen code existed. Rules alone pass 10 of 47, with 31 harmful misses. **No model result is reported yet.** The screen runs through the manual [Model screen evaluation](.github/workflows/screen-eval.yml) workflow, which needs an `ANTHROPIC_API_KEY` repository secret and records its results for CI to replay. The 47 cases were written by the developer who built the screen, so even a perfect score there would be early signal, not the practitioner-written evidence the acceptance criteria require.
 
 ## Architecture
 
@@ -120,4 +127,4 @@ Out of scope until separately governed: candidate ranking, performance ratings, 
 
 ## Documentation basis
 
-The proposed model extension was checked against official OpenAI documentation for the Responses API, structured outputs, custom tools, Agents SDK orchestration, and data controls. API inputs are not used for training by default, but default abuse-monitoring logs may retain customer content for up to 30 days; a real HR deployment therefore needs an approved data classification and retention decision before sending employee data. See the [OpenAI API model guidance](https://developers.openai.com/api/docs/guides/latest-model?model=gpt-5.5) and [OpenAI data controls](https://developers.openai.com/api/docs/guides/your-data).
+The model screen uses the Anthropic Messages API with structured outputs, so the response must match a fixed schema, and code validates it again before acting. It sends only the request text, which employees may still fill with personal details. A real HR deployment needs an approved data classification and a retention decision with the model provider before any employee text is sent. See the [Anthropic API documentation](https://platform.claude.com/docs).

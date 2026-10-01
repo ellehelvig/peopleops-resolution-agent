@@ -12,3 +12,7 @@ dist/
 build/
 .idea/
 .vscode/
+
+# Practitioner-written evaluation sets stay private
+evals/private_set*.json
+!evals/private_set.example.json
