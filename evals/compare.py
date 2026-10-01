@@ -12,7 +12,9 @@ Sets:
 - holdout_v1: the original 16 held-out cases. Historical evidence, now
   regression evidence, because they shaped this redesign.
 - challenge_v2: 47 developer-written cases frozen before the screen existed.
-  Early signal only. See evals/challenge_v2.py.
+  Tuned-on evidence since the 1 October 2026 run informed the prompt change.
+- boundary_regression: 12 paired cases written after that run, separating
+  business-process instructions from system manipulation. Regression evidence.
 - private: an optional practitioner-written set loaded from the path in
   RESOLVE_PRIVATE_SET. Only counts are reported, never request text, so the
   set stays private. This is the set that can meet the acceptance criteria.
@@ -24,14 +26,15 @@ expense of the other shifts the cost to employees or to specialists.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
 from datetime import datetime, timezone
 from pathlib import Path
 
-from evals import challenge_v2, dataset, holdout
+from evals import boundary_regression, challenge_v2, dataset, holdout
 from peopleops.engine import ResolutionEngine
-from peopleops.screen import AnthropicScreen, ClaudeCodeScreen, RecordedScreen, ScreenResult
+from peopleops.screen import SYSTEM_PROMPT, AnthropicScreen, ClaudeCodeScreen, RecordedScreen, ScreenResult
 
 HERE = Path(__file__).parent
 RECORDINGS = HERE / "screen_recordings.json"
@@ -48,7 +51,8 @@ def _cases() -> dict[str, list[tuple]]:
                    (c["expected_flag"],) if c["expected_flag"] else None, c["employee_id"]) for c in dataset.CASES]
     v1 = [(i, cat, req, st, intent, (flag,) if flag else None, "E-1001") for i, cat, req, st, intent, flag in holdout.CASES]
     v2 = [(*case, "E-1001") for case in challenge_v2.CASES]
-    sets = {"regression": regression, "holdout_v1": v1, "challenge_v2": v2}
+    boundary = [(*case, "E-1001") for case in boundary_regression.CASES]
+    sets = {"regression": regression, "holdout_v1": v1, "challenge_v2": v2, "boundary_regression": boundary}
     private_path = os.environ.get("RESOLVE_PRIVATE_SET")
     if private_path:
         rows = json.loads(Path(private_path).read_text())
@@ -129,7 +133,13 @@ def compare(screen) -> dict:
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--screen", choices=("recorded", "claude-code", "anthropic", "none"), default="recorded")
+    parser.add_argument("--run-dir", type=Path, help="also record this live run in its own folder, for example "
+                        "evals/runs/2026-10-02-tuned-a; refuses a folder that already has files, so archives are never overwritten")
     args = parser.parse_args()
+    if args.run_dir and args.run_dir.exists() and any(args.run_dir.iterdir()):
+        parser.error(f"{args.run_dir} already has files; recorded runs are never overwritten")
+    if args.run_dir and args.screen not in {"claude-code", "anthropic"}:
+        parser.error("--run-dir records a live run; use --screen claude-code or --screen anthropic")
     if args.screen == "anthropic":
         screen = RecordingScreen(AnthropicScreen())
     elif args.screen == "claude-code":
@@ -139,10 +149,20 @@ def main() -> None:
     else:
         screen = None
     report = compare(screen)
+    outputs = [(REPORT, RECORDINGS)]
     if isinstance(screen, RecordingScreen):
-        RECORDINGS.write_text(json.dumps({"source": screen.source, "recorded_at": report["generated_at"],
-                                          "results": dict(sorted(screen.recordings.items()))}, indent=2) + "\n")
-    REPORT.write_text(json.dumps(report, indent=2) + "\n")
+        harness = {"claude-code": "ClaudeCodeScreen (claude -p, tools disabled, screen system prompt)",
+                   "anthropic": "AnthropicScreen (Messages API, structured output)"}[args.screen]
+        recordings = {"source": screen.source, "harness": harness,
+                      "screen_prompt_sha256": hashlib.sha256(SYSTEM_PROMPT.encode()).hexdigest(),
+                      "recorded_at": report["generated_at"], "results": dict(sorted(screen.recordings.items()))}
+        if args.run_dir:
+            args.run_dir.mkdir(parents=True, exist_ok=True)
+            outputs.append((args.run_dir / REPORT.name, args.run_dir / RECORDINGS.name))
+        for _, recordings_path in outputs:
+            recordings_path.write_text(json.dumps(recordings, indent=2) + "\n")
+    for report_path, _ in outputs:
+        report_path.write_text(json.dumps(report, indent=2) + "\n")
     for name, entry in report["sets"].items():
         for config, result in entry.items():
             print(f"{name:13} {config:18} {result['passed']:>3}/{result['total']:<3} harmful={result['harmful_misses']} over={result['over_escalations']} {result['miss_types']}")
