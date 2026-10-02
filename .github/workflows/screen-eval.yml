@@ -33,7 +33,7 @@ jobs:
           python-version: '3.12'
 
       - name: Install the Anthropic SDK
-        run: pip install "anthropic>=1.11,<2"
+        run: pip install -r requirements-optional-lock.txt
 
       - name: Run rules alone and rules plus screen
         env:
