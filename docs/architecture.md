@@ -4,7 +4,7 @@ See the single [request-path diagram](../README.md#architecture). This document 
 
 ## Current operating boundary
 
-The engine classifies with keywords, reads synthetic employee and policy records through direct Python functions, drafts recommendations, and returns a result. API and MCP entry points save results. Approval changes case status only; no HR record change or specialist referral is executed. All caller identities and roles are unverified.
+The default API, browser demo, and MCP server use keyword classification and direct Python functions over synthetic employee and policy records. The evaluation harness can inject an optional model screen into the same engine; it is not enabled by the default entry points. The engine drafts recommendations and returns a result. API and MCP entry points save results. Approval changes case status only; no HR record change or specialist referral is executed. All caller identities and roles are unverified.
 
 ### State and logging
 
@@ -32,3 +32,11 @@ There is no MCP approval tool. The API decision route accepts only pending cases
 ## Proposed production controls
 
 Authenticated identities, role/row authorization, durable storage, idempotent writes and recovery, policy-owner publishing and conflict resolution, redacted operational logging, timeouts, expiry, and rollback procedures remain proposals. None should be inferred from current demo state transitions. See the [risk register](governance-and-risk.md) and [release evidence](evaluation-methodology.md).
+
+## Optional model-screen boundary
+
+After keyword injection and sensitive-data stops, the engine classifies the topic and, when supplied, sends request text to a model screen. The screen can replace the topic label or add a refusal, specialist escalation, or uncertainty route. Keyword ER/legal checks still run before employee lookup; the screen cannot clear them. Structured-output validation checks the label contract, not whether the interpretation is safe or correct.
+
+The Anthropic API path sends the text to that provider. The Claude Code path runs a signed-in local CLI whose model request also leaves the machine. Provider terms, retention, account settings, and permission to process the text require review before using anything beyond synthetic examples. No employee record or policy corpus is supplied to the screen by the engine.
+
+Run artifacts are evaluation evidence, not a protected operational audit system. Use synthetic cases in public reports. Do not publish private practitioner sets, raw employee requests, credentials, or provider traces. The preserved first run is untuned, developer-authored evidence; it does not validate the newer prompt boundary or a production deployment.
