@@ -16,6 +16,7 @@ Take "What parental leave am I eligible for?" from employee `E-1001`.
 | 2. Injection screen | Checks for known phrasings such as "ignore previous" or "system prompt". A match stops everything before any data is read. | `INJECTION` list |
 | 3. Sensitive-data screen | Checks for terms like "salary" or "medical record" combined with another person. A match stops before any lookup. | `SENSITIVE` list |
 | 4. Classify the topic | Counts keyword hits for each of four topics and picks the highest. Zero hits means "ask to clarify". It records how many keywords matched, instead of inventing a confidence score. | `_classify()` |
+| 4a. Optional model screen | Reads request text only; may replace the topic or add a safety route. Schema checks do not establish correctness. Default API and MCP entry points do not enable it. | `screen.py`, `resolve()` |
 | 5. ER and legal screen | Words like "harass" or "lawsuit" send the case to a specialist and suppress the normal workflow. | `ER_TERMS`, `LEGAL_TERMS` |
 | 6. Minimum employee lookup | Returns `id`, `region`, `country`, `employment_type`, `status`, `service_days`, `role_category`, and `manager_id`. The lookup excludes names, pay, medical, and contact fields; the UI bootstrap separately lists synthetic names. | `data.py`, `public_employee()` |
 | 7. Policy selection | Picks the active policy version for the topic and region. Superseded versions are excluded. No policy for the region means escalation, not a guess. | `data.py`, `active_policies()` |
@@ -23,13 +24,13 @@ Take "What parental leave am I eligible for?" from employee `E-1001`.
 | 9. Draft and pause | Writes a recommendation with the policy citation and sets `waiting_approval` with the reviewer role. | `_finish()` |
 | 10. Record | Saves the case and writes an audit event. A reviewer later approves or rejects it by name. | `store.py` |
 
-Steps 2, 3, and 5 are keyword safety screens. Steps 4 and 5 demonstrated recognition failures in the rules-only baseline. An optional model screen now runs after those rules when enabled and can only add routing to a person. The first untuned model run reduced harmful misses on developer-authored sets but also produced false prompt-injection refusals, so production use remains withheld. The API calls Python directly; optional MCP tools wrap the same domain functions and maintain a separate case store.
+Steps 2, 3, and 5 are keyword safety screens. Steps 4 and 5 demonstrated recognition failures in the rules-only baseline. An optional model screen runs after steps 2 to 4 and before the keyword ER/legal checks and employee lookup. It can replace the topic or add a safety route; it cannot clear a keyword stop. The first untuned model run reduced harmful misses on developer-authored sets but also produced false prompt-injection refusals, so production use remains withheld. The API calls Python directly; optional MCP tools wrap the same domain functions and maintain a separate case store.
 
 ## What is deterministic, and what might use a model
 
 | Job | Today | Proposed model-enabled hypothesis | Why |
 |---|---|---|---|
-| Recognizing topic and sensitivity in free text | Keyword lists | Language model returning a structured label | Keywords miss ordinary phrasing. The held-out set shows this. |
+| Recognizing topic and sensitivity in free text | Keyword lists by default; optional model screen in evaluations | Structured-label screening now implemented experimentally | Keywords miss ordinary phrasing. The held-out set shows this. |
 | Writing the reply in plain language | Fixed templates | Language model, constrained to the cited policy | Whether a model improves replies must be evaluated; it must not add facts. |
 | Deciding eligibility | Code | Code | It must be the same every time and explainable to an auditor. |
 | Choosing which policy applies | Code | Code | A wrong or superseded policy is a compliance failure. |
@@ -100,7 +101,7 @@ Production use is withheld. The 0/16 result is not overall field accuracy. Any r
 
 **Why call it an agent?** The repository now includes an optional model screening layer, but the important point is architectural: the model is constrained by deterministic controls, minimum data access, and human approval. The system is not designed to let the model execute consequential HR actions autonomously.
 
-**Why not just use an LLM for everything?** Because eligibility, access, and approval have to give the same answer every time and be explainable to an auditor. A model may help interpret language, but code checking a label’s format does not establish that its meaning is correct.
+**Why not just use an LLM for everything?** Because policy eligibility and case-state transitions need explicit, inspectable rules. Field allowlists are implemented; identity-bound authorization is still missing, so the prototype does not establish secure access or an authenticated approval. A model may help interpret language, but code checking a label’s format does not establish that its meaning is correct.
 
 **Your eval passes 100%. What does that prove?** Only that the rules still handle the cases they were written for. That is why the held-out set exists, and it passes 0 of 16.
 
