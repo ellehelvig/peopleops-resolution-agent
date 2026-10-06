@@ -18,9 +18,9 @@ Every run checks expected workflow status, expected intent where specified, cita
 
 ## Held-out cases
 
-The 60 baseline cases were written alongside the keyword rules they test, so a 100% pass rate shows that the rules match their own examples. It does not show that they generalize. `evals/holdout.py` holds 16 cases written afterwards, covering the same risks in the words people actually use, and the rules were not changed to fit them. The original result is preserved in `evals/latest_report.json`. CI checks consistency with the current engine, not a passing holdout threshold. Known failures may be fixed; once these cases influence development, they are regression cases and no longer unseen evidence. Preserve this original result as historical evidence.
+The 60 baseline cases were written alongside the keyword rules they test, so a 100% pass rate shows that the rules match their own examples. It does not show that they generalize. `evals/holdout.py` holds 16 cases written afterwards, covering the same risks with developer-authored synthetic paraphrases, and the rules were not changed to fit them. The original result is preserved in `evals/latest_report.json`. CI checks consistency with the current engine, not a passing holdout threshold. Known failures may be fixed; once these cases influence development, they are regression cases and no longer unseen evidence. Preserve this original result as historical evidence.
 
-Current result: **0 of 16 pass.** Each miss is classified by what it would mean for the employee:
+Current result: **0 of 16 pass.** See the [case-by-case failure review and response decisions](evaluation-results.md#failure-review-and-response-decisions). Each miss is classified by what it would mean for the employee:
 
 | Miss type | Count | What happens |
 |---|---|---|
