@@ -4,7 +4,7 @@ How Resolve works, written for someone who needs to explain it to an engineer wi
 
 ## In one paragraph
 
-Resolve is a rules-based workflow, not a language model application. An employee's request passes through a fixed sequence of checks written in ordinary Python: screen for risky requests, work out the topic, fetch only the employee fields the policy needs, pick the current policy for the employee's region, draft a recommendation, and stop for a named human to approve. The result contains a decision trace. The store logs case creation and later human decisions, not every step or read. Given fixed inputs and data, routing is deterministic; generated IDs, timestamps, and latency vary.
+Resolve is a governed workflow with deterministic controls and an optional language-model screen. An employee's request first passes through explicit Python checks; when the optional screen is enabled, it can add routing to a person but cannot clear a rules stop, approve an outcome, or change access controls. Eligibility, policy selection, minimum-field data access, and human approval remain deterministic. The result contains a decision trace. The store logs case creation and later human decisions, not every step or read.
 
 ## What happens to one request
 
@@ -23,7 +23,7 @@ Take "What parental leave am I eligible for?" from employee `E-1001`.
 | 9. Draft and pause | Writes a recommendation with the policy citation and sets `waiting_approval` with the reviewer role. | `_finish()` |
 | 10. Record | Saves the case and writes an audit event. A reviewer later approves or rejects it by name. | `store.py` |
 
-Steps 2, 3, and 5 are keyword safety screens. Steps 4 and 5 have demonstrated recognition failures. A model is one possible redesign hypothesis, not an established fix. The API calls Python directly; optional MCP tools wrap the same domain functions and maintain a separate case store.
+Steps 2, 3, and 5 are keyword safety screens. Steps 4 and 5 demonstrated recognition failures in the rules-only baseline. An optional model screen now runs after those rules when enabled and can only add routing to a person. The first untuned model run reduced harmful misses on developer-authored sets but also produced false prompt-injection refusals, so production use remains withheld. The API calls Python directly; optional MCP tools wrap the same domain functions and maintain a separate case store.
 
 ## What is deterministic, and what might use a model
 
@@ -98,13 +98,13 @@ Production use is withheld. The 0/16 result is not overall field accuracy. Any r
 
 ## Questions an engineer is likely to ask
 
-**Why call it an agent if there is no model?** It's named for what it is designed to become. The current version is the control layer an agent needs. The README says so up front.
+**Why call it an agent?** The repository now includes an optional model screening layer, but the important point is architectural: the model is constrained by deterministic controls, minimum data access, and human approval. The system is not designed to let the model execute consequential HR actions autonomously.
 
 **Why not just use an LLM for everything?** Because eligibility, access, and approval have to give the same answer every time and be explainable to an auditor. A model may help interpret language, but code checking a label’s format does not establish that its meaning is correct.
 
 **Your eval passes 100%. What does that prove?** Only that the rules still handle the cases they were written for. That is why the held-out set exists, and it passes 0 of 16.
 
-**How do you know the model isn't making things up?** In this version there is no model. In a model version, the reply is limited to the retrieved policy, the citation is required, and a grounding check would test each claim against the cited text.
+**How do you know the model isn't making things up?** The current model layer does not draft the HR decision; it returns a constrained routing classification. Code validates the structured output, and consequential outcomes still depend on explicit policy logic and human approval. If model-generated replies are added later, each claim should be checked against the cited policy text.
 
 **What stops prompt injection?** Today, a keyword list, which catches only phrasings it knows. The real protection is structural: the model can't approve anything, can't set a case's status, and can read only allowlisted fields. In a future model version, injection could still influence routing, inputs, and drafts. These limits constrain impact; they do not eliminate the risk.
 
