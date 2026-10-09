@@ -24,13 +24,19 @@ These are current prototype risks. Except for the explicit ER/legal judgment bel
 
 **Why ER/legal residual risk is High.** In the original 16-case holdout, four concerns received a generic clarification reply. A fifth, the labor-board complaint, entered routine relocation review (`mobility_and_legal`) without recognizing the complaint as a legal concern. None received the expected specialist escalation. These hand-written cases demonstrate a failure, not its field prevalence. The severity supports withholding production use of the current intake workflow. ER and Legal must review evidence from any redesign against the [acceptance criteria](evaluation-methodology.md#acceptance-criteria-for-redesigned-routing) before reconsidering release.
 
+## Optional screen evidence
+
+The first untuned model run improved recognition on developer-authored cases and also refused ordinary business requests incorrectly. Those recordings are historical evidence, not validation of the revised prompt. Keep harmful misses, false refusals, uncertainty, and incomplete escalation separate. Fresh practitioner-written cases and ER/Legal review are still required. See [evaluation results](evaluation-results.md).
+
+A model may replace a topic label or add routing to a person; it cannot grant access, approve a case, or execute an HR action. Request text leaves the machine on the optional model path. Provider approval and data minimization must precede any use of real employee text.
+
 ## Proposed production controls
 
 Role-bound own-case intake, restricted specialist queues, policy publishing permissions, authenticated reviewer identity, durable state, idempotency, redacted operational logging, and alerting are **proposed**, not current protections. Retention schedules require an approved purpose and jurisdiction-specific Legal/Privacy review; none is enforced by the prototype. Documented roles and retention intentions receive no implementation credit.
 
 ## Controls against the OWASP Top 10 for Agentic Applications
 
-The [OWASP Top 10 for Agentic Applications](https://genai.owasp.org/resource/owasp-top-10-for-agentic-applications-for-2026/) lists security risks specific to AI systems that call tools and act for someone. This version of Resolve has no model, so some risks are not yet live.
+The [OWASP Top 10 for Agentic Applications](https://genai.owasp.org/resource/owasp-top-10-for-agentic-applications-for-2026/) lists security risks specific to AI systems that call tools and act for someone. The default entry points use rules. The optional evaluation screen introduces a model-provider boundary and untrusted request text. That path needs separate model, privacy, and adversarial evaluation; the rules-only tests do not establish its safety.
 
 Status means: **implemented and tested** when a named test in this repository checks the behavior; **implemented, not tested** when the code does it but no test checks it; **designed only** when it exists in documentation.
 

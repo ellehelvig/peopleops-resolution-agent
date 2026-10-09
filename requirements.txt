@@ -1,3 +1,2 @@
-# The deployed demo intentionally uses only Python's standard library.
-# Install requirements-optional.txt only when running the MCP facade or
-# extending the deterministic baseline with the OpenAI Agents SDK.
+# The default browser demo and local app use only Python's standard library.
+# Install requirements-optional-lock.txt only for the MCP facade or Claude screen.
