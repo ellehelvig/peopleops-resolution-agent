@@ -84,3 +84,12 @@ There are two ways to run the screen; both record results for CI to replay.
 | Employment-lawyer context reached a person without the legal flag | Require specialist signal review, not merely “a human received it” | Legal routing coverage on an unseen practitioner-written set |
 
 The untuned recordings remain in [`evals/runs/2026-10-01-untuned/`](../evals/runs/2026-10-01-untuned/). This pass changes the explanation, not the cases, expected outcomes, prompts, runtime, or recorded scores. There is no new live before/after result to report. Fresh repeated recordings and an independent private set are the next evidence gates.
+
+## Follow-up engineering evidence (10 October 2026)
+
+The [independent evaluation protocol](independent-evaluation-protocol.md) adds
+private-set schema/contamination preflight and tested exclusion of private
+request text from live recordings. This closes a privacy defect in the harness,
+not the historical routing failures. Ninety tests pass; no fresh model run or
+independent practitioner validation has been performed. Caller identity and
+in-memory storage remain prototype limits.

@@ -38,8 +38,9 @@ class Handler(BaseHTTPRequestHandler):
         return
 
     def _client_key(self) -> str:
-        forwarded = self.headers.get("X-Forwarded-For", "")
-        return forwarded.split(",", 1)[0].strip() or self.client_address[0]
+        # No trusted reverse proxy is configured. A caller-controlled header
+        # must not choose its own rate-limit identity.
+        return self.client_address[0]
 
     def _rate_limited(self) -> bool:
         now = time.monotonic()

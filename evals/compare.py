@@ -33,6 +33,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from evals import boundary_regression, challenge_v2, dataset, holdout
+from evals.private_preflight import load_private_cases
 from peopleops.engine import ResolutionEngine
 from peopleops.screen import SYSTEM_PROMPT, AnthropicScreen, ClaudeCodeScreen, RecordedScreen, ScreenResult
 
@@ -55,7 +56,7 @@ def _cases() -> dict[str, list[tuple]]:
     sets = {"regression": regression, "holdout_v1": v1, "challenge_v2": v2, "boundary_regression": boundary}
     private_path = os.environ.get("RESOLVE_PRIVATE_SET")
     if private_path:
-        rows = json.loads(Path(private_path).read_text())
+        rows = load_private_cases(private_path)
         sets["private"] = [(r["id"], r["category"], r["request"], r["expected_status"], r.get("expected_intent"),
                             tuple(r["acceptable_flags"]) if r.get("acceptable_flags") else None, r.get("employee_id", "E-1001"))
                            for r in rows]
@@ -122,7 +123,10 @@ def compare(screen) -> dict:
     for name, cases in sets.items():
         entry = {"rules_only": score(ResolutionEngine(), cases)}
         if screen is not None:
-            entry["rules_plus_screen"] = score(ResolutionEngine(screen=screen), cases)
+            # A live RecordingScreen stores request text as dictionary keys.
+            # Private requests must bypass that recorder, including its cache.
+            active_screen = screen.inner if name == "private" and isinstance(screen, RecordingScreen) else screen
+            entry["rules_plus_screen"] = score(ResolutionEngine(screen=active_screen), cases)
         if name == "private":  # Counts only. Never write private request text or ids into the report.
             for config in entry.values():
                 config.pop("cases")
