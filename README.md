@@ -1,14 +1,13 @@
-# Resolve: PeopleOps Resolution Agent
+# Resolve: HR workflow and judgment demonstration
 
-Resolve carries a synthetic HR request from intake to a policy-cited recommendation, human review, and an audit record. It is for People Operations leaders and technical reviewers who want to inspect the controls and evidence behind an HR workflow.
+Resolve explores where ordinary rules can support HR service work and where a person must remain accountable. It is a synthetic demonstration for People Operations and transformation leaders, with source evidence for technical partners.
+
+The default demo matches requests to fictional policies, prepares fixed-template responses, records a simulated review decision, and keeps temporary activity history. The review names are self-reported, the history is not protected audit evidence, and no employment action or specialist notification is executed. An optional model screen and MCP tool facade are separate from the browser demo; neither establishes authorization or general reliability.
 
 [Try the browser demo](https://ellehelvig.github.io/peopleops-resolution-agent/) · [Technical walkthrough](TECHNICAL-WALKTHROUGH.md) · [Evaluation evidence](docs/evaluation-results.md)
 
 [![Tests](https://img.shields.io/github/actions/workflow/status/ellehelvig/peopleops-resolution-agent/quality.yml?branch=main&style=flat-square&label=tests)](https://github.com/ellehelvig/peopleops-resolution-agent/actions/workflows/quality.yml)
 
-![Resolve walkthrough: a parental-leave request answered with a policy citation, a prompt-injection attempt refused, and a People Partner approving the draft](docs/assets/resolve-walkthrough.gif)
-
-*A 20-second walkthrough using synthetic people and policies.*
 
 ## Why I built this
 
@@ -18,7 +17,7 @@ An HR workflow needs more than a plausible answer. It needs clear data boundarie
 
 **Experimental prototype. Production use is withheld.** The browser demo uses deterministic rules and synthetic data. The repository also includes an optional Claude screen that can add routing to a person. It cannot clear a rules stop, approve an outcome, or change data-access controls.
 
-The first model-screen run is early signal from developer-authored cases. It is not independent validation. Human approval identities are self-reported, employee identity is not authenticated, and stores are ephemeral. No HR action or specialist notification is executed.
+The first model-screen run is early signal from developer-authored cases. It is not independent validation. See the [evaluation evidence](docs/evaluation-results.md) for the preserved results and their limits.
 
 ## A one-minute tour
 
@@ -30,7 +29,12 @@ The first model-screen run is early signal from developer-authored cases. It is 
 
 The rules support parental leave, remote work, relocation, and manager change. Relocation scope requires specialist verification. Names, compensation, medical, demographic, and contact fields are excluded from employee lookup responses.
 
-## Run locally
+## Technical setup and evidence
+
+<details>
+<summary>Open local setup, optional integrations, and repository map</summary>
+
+### Run locally
 
 Requires Python 3.11 or later. The default app needs no third-party Python packages:
 
@@ -68,13 +72,17 @@ Model-screen evaluation can use signed-in Claude Code or an `ANTHROPIC_API_KEY` 
 
 The optional dependency lock records exact versions resolved for Python 3.11 and later. To refresh it, use `uv pip compile requirements-optional.txt --python-version 3.11 --universal --no-header --upgrade --output-file requirements-optional-lock.txt`, install it in a fresh environment, and rerun the offline checks before review.
 
+</details>
+
 ## How far the rules generalize
 
 The original rules passed 60 of 60 regression cases and 0 of 16 developer-authored synthetic paraphrases. Five Employee Relations or legal concerns were not correctly escalated. That historical set has since informed development, so it is now regression evidence.
 
 The first untuned model-screen run reduced harmful misses on developer-authored sets and also produced false refusals of ordinary business requests. Prompt tuning requires new recordings and fresh practitioner-written private evaluation before any release decision. Read the [failure review and response decisions](docs/evaluation-results.md#failure-review-and-response-decisions), [preserved results and caveats](docs/evaluation-results.md) and [acceptance criteria](docs/evaluation-methodology.md#acceptance-criteria-for-redesigned-routing). A passing CI run checks implementation consistency, not production reliability.
 
-## Repository map
+[Historical synthetic walkthrough](docs/assets/resolve-walkthrough.gif): this older recording uses approval and activity labels for simulated review and temporary history. It does not demonstrate authenticated approval or protected audit records.
+
+## Implementation map
 
 | Path | Purpose |
 |---|---|

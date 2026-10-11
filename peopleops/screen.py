@@ -52,8 +52,10 @@ def failed(source: str, reason: str) -> ScreenResult:
     return ScreenResult(signals=(), uncertain=True, intent="unknown", source=source, error=reason)
 
 
-def parse(payload: dict, source: str) -> ScreenResult:
+def parse(payload: object, source: str) -> ScreenResult:
     """Validate model output in code. Anything malformed fails closed."""
+    if not isinstance(payload, dict) or set(payload) != {"signals", "uncertain", "intent"}:
+        return failed(source, "invalid fields")
     signals = payload.get("signals")
     uncertain = payload.get("uncertain")
     intent = payload.get("intent")
@@ -133,12 +135,12 @@ class AnthropicScreen:
             )
         except Exception as exc:  # Any API failure sends the request to a person.
             return failed(self.source, f"api error: {type(exc).__name__}")
-        if response.stop_reason != "end_turn":
-            return failed(self.source, f"stop reason: {response.stop_reason}")
-        text = next((block.text for block in response.content if block.type == "text"), None)
         try:
+            if response.stop_reason != "end_turn":
+                return failed(self.source, "incomplete response")
+            text = next((block.text for block in response.content if block.type == "text"), None)
             payload = json.loads(text) if text else None
-        except json.JSONDecodeError:
+        except (json.JSONDecodeError, AttributeError, TypeError):
             payload = None
         if not isinstance(payload, dict):
             return failed(self.source, "unparseable output")

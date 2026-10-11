@@ -2,6 +2,15 @@
 
 [Project overview](../README.md) · [Evaluation methodology](evaluation-methodology.md)
 
+## Response-contract reliability
+
+The route parser rejects non-object output and undeclared fields. Malformed
+provider envelopes return an unavailable-screen result instead of raising an
+exception. Controlled regressions verify that this result routes to human review
+before employee lookup. These tests validate failure handling, not model routing
+quality. No new live model run, tuned recording, or independent evaluation is
+reported by this correction; the release decision below remains unchanged.
+
 ## How far the rules generalize
 
 The 60 baseline cases pass 60 of 60, but they were written alongside the keyword rules they test. So `evals/holdout.py` adds 16 cases covering the same risks with developer-authored synthetic paraphrases, and the rules were not tuned to them. **They pass 0 of 16.**
@@ -75,3 +84,12 @@ There are two ways to run the screen; both record results for CI to replay.
 | Employment-lawyer context reached a person without the legal flag | Require specialist signal review, not merely “a human received it” | Legal routing coverage on an unseen practitioner-written set |
 
 The untuned recordings remain in [`evals/runs/2026-10-01-untuned/`](../evals/runs/2026-10-01-untuned/). This pass changes the explanation, not the cases, expected outcomes, prompts, runtime, or recorded scores. There is no new live before/after result to report. Fresh repeated recordings and an independent private set are the next evidence gates.
+
+## Follow-up engineering evidence (10 October 2026)
+
+The [independent evaluation protocol](independent-evaluation-protocol.md) adds
+private-set schema/contamination preflight and tested exclusion of private
+request text from live recordings. This closes a privacy defect in the harness,
+not the historical routing failures. Ninety tests pass; no fresh model run or
+independent practitioner validation has been performed. Caller identity and
+in-memory storage remain prototype limits.

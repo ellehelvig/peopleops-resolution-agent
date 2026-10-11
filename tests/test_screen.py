@@ -96,6 +96,15 @@ class LayeringTests(unittest.TestCase):
 
 
 class ParseTests(unittest.TestCase):
+    def test_non_object_and_extra_fields_fail_closed(self):
+        for payload in (None, [], "route", 1,
+                        {"signals": [], "uncertain": False, "intent": "remote_work", "approve": True}):
+            with self.subTest(payload=payload):
+                result = parse(payload, "test")
+                self.assertIsNotNone(result.error)
+                self.assertTrue(result.uncertain)
+                self.assertEqual(result.intent, "unknown")
+
     def test_valid_payload(self):
         result = parse({"signals": ["legal", "legal"], "uncertain": False, "intent": "relocation"}, "test")
         self.assertEqual(result.signals, ("legal",))
@@ -129,6 +138,24 @@ def response(text: str, stop_reason: str = "end_turn"):
 
 
 class AnthropicScreenTests(unittest.TestCase):
+    def test_malformed_provider_envelopes_fail_closed(self):
+        for envelope in (None, SimpleNamespace(),
+                         SimpleNamespace(stop_reason="end_turn", content=None),
+                         SimpleNamespace(stop_reason="end_turn", content=[SimpleNamespace(type="text")]),
+                         response({"unexpected": "object"})):
+            with self.subTest(envelope=envelope):
+                result = AnthropicScreen(client=fake_client(FakeMessages(envelope))).screen("synthetic request")
+                self.assertIsNotNone(result.error)
+                self.assertTrue(result.uncertain)
+
+    def test_malformed_provider_routes_to_human_before_data_access(self):
+        screen = AnthropicScreen(client=fake_client(FakeMessages(
+            SimpleNamespace(stop_reason="end_turn", content=None))))
+        result = ResolutionEngine(screen=screen).resolve("I want to work from home", "E-1001")
+        self.assertEqual(result["status"], "escalated")
+        self.assertIn("screen_unavailable", result["safety_flags"])
+        self.assertEqual(result["data_accessed"], [])
+
     def test_parses_structured_output(self):
         messages = FakeMessages(response(json.dumps({"signals": ["employee_relations"], "uncertain": False, "intent": "manager_change"})))
         result = AnthropicScreen(model="claude-opus-5-5", client=fake_client(messages)).screen("text")

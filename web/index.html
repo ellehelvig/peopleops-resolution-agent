@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Resolve | PeopleOps Resolution Agent</title>
-  <meta name="description" content="Governed HR case-resolution workflow demo: cited recommendations, human approval, audit trail, and an evaluation baseline. Synthetic data only.">
+  <title>Resolve | Synthetic HR workflow demonstration</title>
+  <meta name="description" content="Synthetic rules-based HR workflow with fictional policies, simulated review, and temporary activity history. Known routing failures; no employment actions.">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net 'wasm-unsafe-eval'; connect-src 'self' https://cdn.jsdelivr.net; style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; object-src 'none'; base-uri 'none'">
   <link rel="stylesheet" href="styles.css">
 </head>
@@ -14,7 +14,7 @@
       <span class="brand-mark">R</span>
       <div>
         <div class="brand-name">Resolve</div>
-        <div class="brand-sub">PeopleOps Resolution Agent</div>
+        <div class="brand-sub">HR workflow demonstration</div>
       </div>
     </div>
     <nav class="tabs" role="tablist">
@@ -27,12 +27,13 @@
   </header>
 
   <main class="wrap">
+    <p class="card"><strong>Synthetic rules-only demo.</strong> Review identities are self-reported. Activity history is temporary. No employment action is executed. Known routing failures remain; production use is withheld.</p>
     <!-- Intake -->
     <section class="view is-active" id="view-intake">
       <div class="two-col">
         <div class="card">
           <h2>Submit a request</h2>
-          <p class="muted">Pick a synthetic employee, write the request the way an employee would, and watch the engine decide what it can and cannot do with it.</p>
+          <p class="muted">Pick a synthetic employee, write the request the way an employee would, and inspect how the rules route it. Use fictional content only.</p>
           <label class="field">
             <span>Employee</span>
             <select id="employee"></select>
@@ -65,7 +66,7 @@
 
         <div class="card" id="result-card">
           <h2>Decision record</h2>
-          <p class="muted" id="result-empty">No request yet. The record shows exactly what the system read, what it cited, and who has to approve before anything happens.</p>
+          <p class="muted" id="result-empty">No request yet. The record shows routing, policy references, and a simulated review state. It does not verify identity or execute an employment action.</p>
           <div id="result" hidden>
             <div class="pill-row">
               <span class="pill" id="r-status"></span>
@@ -118,16 +119,17 @@
     <section class="view" id="view-operations">
       <div class="card">
         <h2>Workflow measures</h2>
-        <p class="muted">Observed from the case store in this session. Hours saved is an estimate from a fixed per-case assumption, labeled as such.</p>
+        <p class="muted">Counts from synthetic seed cases and activity in this session. They are not adoption, productivity, or business outcomes.</p>
         <div class="metrics" id="metrics"></div>
       </div>
       <div class="card">
         <h2>Quality baseline</h2>
-        <p class="muted">Separate from workflow measures. The 60-case suite runs deterministically in CI and the committed report must match the engine. Held-out cases show how far the rules generalize.</p>
+        <p class="muted">Separate from workflow measures. The 60-case suite runs deterministically in CI and the committed report must match the engine. The original 16 paraphrase cases exposed failures and now inform development; they are regression evidence, not an independent field estimate.</p>
         <div id="evals"></div>
       </div>
       <div class="card">
-        <h2>Audit events</h2>
+        <h2>Temporary activity history</h2>
+        <p class="muted">In-memory, bounded history with self-reported actors. Not immutable, tamper-evident, or protected audit evidence.</p>
         <table class="table" id="audit-table">
           <thead><tr><th>Time</th><th>Case</th><th>Actor</th><th>Event</th><th>Details</th></tr></thead>
           <tbody></tbody>
@@ -149,21 +151,21 @@
             <tr><td>Recognized legal keywords produce Legal escalation status</td><td><code>engine.py</code> LEGAL_TERMS</td><td><code>test_legal_language_routes_to_legal</code></td></tr>
             <tr><td>Minimal synthetic persona list in bootstrap</td><td><code>api.py</code> bootstrap field selection</td><td><code>test_bootstrap_exposes_only_minimum_employee_fields</code></td></tr>
             <tr><td>Only active policy versions are cited</td><td><code>data.py</code> <code>active_policies()</code> filters superseded</td><td><code>test_remote_work_uses_active_policy_version_not_superseded</code></td></tr>
-            <tr><td>Every consequential outcome needs a named approver</td><td><code>engine.py</code> <code>approval_required</code> on all workflow paths</td><td><code>test_every_consequential_outcome_requires_approval</code></td></tr>
+            <tr><td>Supported workflow recommendations enter simulated review</td><td><code>engine.py</code> <code>approval_required</code> on all workflow paths</td><td><code>test_every_consequential_outcome_requires_approval</code></td></tr>
             <tr><td>Fail closed on missing records or policy gaps</td><td><code>engine.py</code> missing employee and policy_gap branches</td><td><code>test_missing_employee_fails_closed</code>, <code>test_uk_employee_with_no_regional_policy_escalates_as_policy_gap</code></td></tr>
-            <tr><td>Audit trail for every creation and decision</td><td><code>store.py</code> <code>_log()</code></td><td><code>test_resolve_then_approve_round_trip</code></td></tr>
-            <tr><td>Evidence can't drift from code</td><td><code>evals/run.py</code> plus committed report</td><td><code>test_committed_report_matches_the_current_engine</code></td></tr>
+            <tr><td>Temporary events for case creation and simulated review</td><td><code>store.py</code> <code>_log()</code></td><td><code>test_resolve_then_approve_round_trip</code></td></tr>
+            <tr><td>Committed regression report checked against rules</td><td><code>evals/run.py</code> plus committed report</td><td><code>test_committed_report_matches_the_current_engine</code></td></tr>
           </tbody>
         </table>
       </div>
       <div class="card">
         <h2>What this demo is not</h2>
-        <p>No authentication, no persistent database, no real data. The live demo runs entirely in your browser, so each visitor gets a private session and nothing typed here leaves the page. Authentication, authorization, and data retention are release gates in <code>docs/governance-and-risk.md</code>. The engine is deterministic on purpose so every safety decision can be reproduced; production use is withheld after the original 0/16 holdout result. A redesign must address hidden risks and be evaluated on new unseen cases as well as the regression suite, without assuming a model is the solution.</p>
+        <p>No authentication, no persistent database, no real data. The live demo runs entirely in your browser, so each visitor gets a private session and nothing typed here leaves the page. Authentication, authorization, and data retention are release gates in <code>docs/governance-and-risk.md</code>. The rules are deterministic so their routing can be reproduced; production use is withheld after the original 0/16 holdout result. A redesign must address hidden risks and be evaluated on new unseen cases as well as the regression suite, without assuming a model is the solution.</p>
       </div>
     </section>
   </main>
 
-  <footer class="foot">Reference implementation. All people, policies, and cases are synthetic. Not legal or HR advice.</footer>
+  <footer class="foot">Synthetic demonstration. All people, policies, and cases are fictional. Not legal or HR advice.</footer>
   <script src="in-browser-api.js"></script>
   <script src="app.js"></script>
 </body>
