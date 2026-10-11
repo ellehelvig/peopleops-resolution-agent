@@ -8,9 +8,6 @@ The default demo matches requests to fictional policies, prepares fixed-template
 
 [![Tests](https://img.shields.io/github/actions/workflow/status/ellehelvig/peopleops-resolution-agent/quality.yml?branch=main&style=flat-square&label=tests)](https://github.com/ellehelvig/peopleops-resolution-agent/actions/workflows/quality.yml)
 
-![Resolve walkthrough: a parental-leave request answered with a policy citation, a prompt-injection attempt refused, and a People Partner approving the draft](docs/assets/resolve-walkthrough.gif)
-
-*Earlier synthetic walkthrough. Review is simulated, identities are self-reported, and the activity history is temporary. The current written limitations take precedence over labels in this recording.*
 
 ## Why I built this
 
@@ -20,7 +17,7 @@ An HR workflow needs more than a plausible answer. It needs clear data boundarie
 
 **Experimental prototype. Production use is withheld.** The browser demo uses deterministic rules and synthetic data. The repository also includes an optional Claude screen that can add routing to a person. It cannot clear a rules stop, approve an outcome, or change data-access controls.
 
-The first model-screen run is early signal from developer-authored cases. It is not independent validation. Human approval identities are self-reported, employee identity is not authenticated, and stores are ephemeral. No HR action or specialist notification is executed.
+The first model-screen run is early signal from developer-authored cases. It is not independent validation. See the [evaluation evidence](docs/evaluation-results.md) for the preserved results and their limits.
 
 ## A one-minute tour
 
@@ -82,6 +79,8 @@ The optional dependency lock records exact versions resolved for Python 3.11 and
 The original rules passed 60 of 60 regression cases and 0 of 16 developer-authored synthetic paraphrases. Five Employee Relations or legal concerns were not correctly escalated. That historical set has since informed development, so it is now regression evidence.
 
 The first untuned model-screen run reduced harmful misses on developer-authored sets and also produced false refusals of ordinary business requests. Prompt tuning requires new recordings and fresh practitioner-written private evaluation before any release decision. Read the [failure review and response decisions](docs/evaluation-results.md#failure-review-and-response-decisions), [preserved results and caveats](docs/evaluation-results.md) and [acceptance criteria](docs/evaluation-methodology.md#acceptance-criteria-for-redesigned-routing). A passing CI run checks implementation consistency, not production reliability.
+
+[Historical synthetic walkthrough](docs/assets/resolve-walkthrough.gif): this older recording uses approval and activity labels for simulated review and temporary history. It does not demonstrate authenticated approval or protected audit records.
 
 ## Implementation map
 
