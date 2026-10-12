@@ -1,23 +1,46 @@
-# Resolve: HR workflow and judgment demonstration
+<picture>
+  <source media="(max-width: 600px) and (prefers-color-scheme: dark)" srcset="assets/resolve-mobile-dark.svg">
+  <source media="(max-width: 600px)" srcset="assets/resolve-mobile-light.svg">
+  <source media="(prefers-color-scheme: dark)" srcset="assets/resolve-dark.svg">
+  <img alt="Resolve. Where rules can help with HR requests, and where a person must decide. A request is checked against policy rules. A routine request becomes a prepared response that waits for human review. Anything outside the rules stops and is routed to a person." src="assets/resolve-light.svg" width="100%">
+</picture>
+
+<p align="center">
+  <a href="https://ellehelvig.github.io/peopleops-resolution-agent/">Try the demo</a> &nbsp;·&nbsp;
+  <a href="TECHNICAL-WALKTHROUGH.md">How it works</a> &nbsp;·&nbsp;
+  <a href="docs/evaluation-results.md">Evidence and limits</a>
+</p>
+
+<p align="center">
+  <a href="https://github.com/ellehelvig/peopleops-resolution-agent/actions/workflows/quality.yml"><img alt="Tests" src="https://img.shields.io/github/actions/workflow/status/ellehelvig/peopleops-resolution-agent/quality.yml?branch=main&style=flat-square&label=tests"></a>
+</p>
+
+<br>
+
+## What it is
 
 Resolve explores where ordinary rules can support HR service work and where a person must remain accountable. It is a synthetic demonstration for People Operations and transformation leaders, with source evidence for technical partners.
 
-The default demo matches requests to fictional policies, prepares fixed-template responses, records a simulated review decision, and keeps temporary activity history. The review names are self-reported, the history is not protected audit evidence, and no employment action or specialist notification is executed. An optional model screen and MCP tool facade are separate from the browser demo; neither establishes authorization or general reliability.
-
-[Try the browser demo](https://ellehelvig.github.io/peopleops-resolution-agent/) · [Technical walkthrough](TECHNICAL-WALKTHROUGH.md) · [Evaluation evidence](docs/evaluation-results.md)
-
-[![Tests](https://img.shields.io/github/actions/workflow/status/ellehelvig/peopleops-resolution-agent/quality.yml?branch=main&style=flat-square&label=tests)](https://github.com/ellehelvig/peopleops-resolution-agent/actions/workflows/quality.yml)
-
+A request is matched to a fictional policy. A routine request becomes a fixed-template response that waits for a person to approve or reject it. A request the rules should not handle stops and goes to a person.
 
 ## Why I built this
 
 An HR workflow needs more than a plausible answer. It needs clear data boundaries, policy evidence, a place to stop, and an accountable reviewer. I defined the workflow, controls, and evaluation, then built this prototype with AI-assisted development in Claude Code. The [People Partner work-redesign case study](https://github.com/ellehelvig/hr-ai-transformation-playbook/blob/main/01-use-cases/work-redesign-people-partner.md) explains the choices behind it.
 
-## Current status
+<br>
 
-**Experimental prototype. Production use is withheld.** The browser demo uses deterministic rules and synthetic data. The repository also includes an optional Claude screen that can add routing to a person. It cannot clear a rules stop, approve an outcome, or change data-access controls.
+## Who does what
 
-The first model-screen run is early signal from developer-authored cases. It is not independent validation. See the [evaluation evidence](docs/evaluation-results.md) for the preserved results and their limits.
+<picture>
+  <source media="(max-width: 600px) and (prefers-color-scheme: dark)" srcset="assets/roles-mobile-dark.svg">
+  <source media="(max-width: 600px)" srcset="assets/roles-mobile-light.svg">
+  <source media="(prefers-color-scheme: dark)" srcset="assets/roles-dark.svg">
+  <img alt="Who does what in Resolve. Deterministic rules: match a request to a fictional policy and prepare a fixed-template response. Status: in the demo. AI assistance: an optional Claude screen can add routing to a person. It cannot clear a rules stop, approve an outcome, or change data access. Status: optional, early signal. Human review: a reviewer approves or rejects the pending recommendation. Status: simulated review. Autonomous action: none. No employment action or specialist notification is executed. Status: not permitted." src="assets/roles-light.svg" width="100%">
+</picture>
+
+The browser demo uses deterministic rules and synthetic data. The optional model screen and MCP tool facade are separate from it, and neither establishes authorization or general reliability. Review names are typed, not authenticated. The activity history is temporary and is not protected audit evidence.
+
+<br>
 
 ## A one-minute tour
 
@@ -28,6 +51,30 @@ The first model-screen run is early signal from developer-authored cases. It is 
 5. Open Operations and Governance to compare the published evaluation evidence and implementation boundaries.
 
 The rules support parental leave, remote work, relocation, and manager change. Relocation scope requires specialist verification. Names, compensation, medical, demographic, and contact fields are excluded from employee lookup responses.
+
+<br>
+
+## Current status
+
+**Experimental prototype. Production use is withheld.** The repository includes an optional Claude screen that can add routing to a person. It cannot clear a rules stop, approve an outcome, or change data-access controls.
+
+The first model-screen run is early signal from developer-authored cases. It is not independent validation. See the [evaluation evidence](docs/evaluation-results.md) for the preserved results and their limits.
+
+## How far the rules generalize
+
+The original rules passed 60 of 60 regression cases and 0 of 16 developer-authored synthetic paraphrases. Five Employee Relations or legal concerns were not correctly escalated. That historical set has since informed development, so it is now regression evidence.
+
+The first untuned model-screen run reduced harmful misses on developer-authored sets and also produced false refusals of ordinary business requests. Prompt tuning requires new recordings and fresh practitioner-written private evaluation before any release decision. Read the [failure review and response decisions](docs/evaluation-results.md#failure-review-and-response-decisions), [preserved results and caveats](docs/evaluation-results.md) and [acceptance criteria](docs/evaluation-methodology.md#acceptance-criteria-for-redesigned-routing). A passing CI run checks implementation consistency, not production reliability.
+
+[Historical synthetic walkthrough](docs/assets/resolve-walkthrough.gif): this older recording uses approval and activity labels for simulated review and temporary history. It does not demonstrate authenticated approval or protected audit records.
+
+## Before real use
+
+Authenticate employees and reviewers, bind access to identity, use durable approval state and protected storage, approve model-provider data handling, and validate routing against new unseen cases. See [architecture](docs/architecture.md) and [governance and risk](docs/governance-and-risk.md).
+
+Candidate ranking, performance ratings, compensation recommendations, discipline, termination, medical inference, employee monitoring, and autonomous employment actions are out of scope. All demo data is synthetic. This is not legal or HR advice.
+
+<br>
 
 ## Technical setup and evidence
 
@@ -72,17 +119,7 @@ Model-screen evaluation can use signed-in Claude Code or an `ANTHROPIC_API_KEY` 
 
 The optional dependency lock records exact versions resolved for Python 3.11 and later. To refresh it, use `uv pip compile requirements-optional.txt --python-version 3.11 --universal --no-header --upgrade --output-file requirements-optional-lock.txt`, install it in a fresh environment, and rerun the offline checks before review.
 
-</details>
-
-## How far the rules generalize
-
-The original rules passed 60 of 60 regression cases and 0 of 16 developer-authored synthetic paraphrases. Five Employee Relations or legal concerns were not correctly escalated. That historical set has since informed development, so it is now regression evidence.
-
-The first untuned model-screen run reduced harmful misses on developer-authored sets and also produced false refusals of ordinary business requests. Prompt tuning requires new recordings and fresh practitioner-written private evaluation before any release decision. Read the [failure review and response decisions](docs/evaluation-results.md#failure-review-and-response-decisions), [preserved results and caveats](docs/evaluation-results.md) and [acceptance criteria](docs/evaluation-methodology.md#acceptance-criteria-for-redesigned-routing). A passing CI run checks implementation consistency, not production reliability.
-
-[Historical synthetic walkthrough](docs/assets/resolve-walkthrough.gif): this older recording uses approval and activity labels for simulated review and temporary history. It does not demonstrate authenticated approval or protected audit records.
-
-## Implementation map
+### Implementation map
 
 | Path | Purpose |
 |---|---|
@@ -93,11 +130,12 @@ The first untuned model-screen run reduced harmful misses on developer-authored 
 | `evals/` | Regression and challenge cases, recorded runs, and comparison tools |
 | `tests/` | Workflow, privacy, HTTP, MCP, screen, and report-drift checks |
 | `docs/` | Architecture, evaluation evidence, risk register, and pilot plan |
+| `assets/` | README banner and diagrams, in light, dark, and narrow-screen versions |
 
-## Before real use
+</details>
 
-Authenticate employees and reviewers, bind access to identity, use durable approval state and protected storage, approve model-provider data handling, and validate routing against new unseen cases. See [architecture](docs/architecture.md) and [governance and risk](docs/governance-and-risk.md).
+<br>
 
-Candidate ranking, performance ratings, compensation recommendations, discipline, termination, medical inference, employee monitoring, and autonomous employment actions are out of scope. All demo data is synthetic. This is not legal or HR advice.
+---
 
-[MIT license](LICENSE) · [Security](SECURITY.md) · [Pilot plan](docs/pilot-plan.md)
+[MIT license](LICENSE) · [Security](SECURITY.md) · [Pilot plan](docs/pilot-plan.md) · [Elle Helvig](https://github.com/ellehelvig) · Companion to the [HR AI Transformation Playbook](https://github.com/ellehelvig/hr-ai-transformation-playbook)
