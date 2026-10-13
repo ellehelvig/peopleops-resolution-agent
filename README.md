@@ -2,7 +2,7 @@
   <source media="(max-width: 600px) and (prefers-color-scheme: dark)" srcset="assets/resolve-mobile-dark.svg">
   <source media="(max-width: 600px)" srcset="assets/resolve-mobile-light.svg">
   <source media="(prefers-color-scheme: dark)" srcset="assets/resolve-dark.svg">
-  <img alt="Resolve. Where rules can help with HR requests, and where a person must decide. A request is checked against policy rules. A routine request becomes a prepared response that waits for human review. Anything outside the rules stops and is routed to a person." src="assets/resolve-light.svg" width="100%">
+  <img alt="Resolve. Where rules can help with HR requests, and where a person must decide. A request is checked against policy rules. A routine request becomes a prepared response that waits for human review. A sensitive request, or one with no matching policy, is escalated to a person. A manipulation attempt is refused with no HR action." src="assets/resolve-light.svg" width="100%">
 </picture>
 
 <p align="center">
@@ -21,7 +21,7 @@
 
 Resolve explores where ordinary rules can support HR service work and where a person must remain accountable. It is a synthetic demonstration for People Operations and transformation leaders, with source evidence for technical partners.
 
-A request is matched to a fictional policy. A routine request becomes a fixed-template response that waits for a person to approve or reject it. A request the rules should not handle stops and goes to a person.
+A request is matched to one of four supported topics and a fictional policy. A routine request becomes a fixed-template response that waits for a person to approve or reject it. A request with Employee Relations or legal language, or from a region with no matching policy, is escalated to a person. A prompt-injection attempt is refused, with no HR action. An unclear request gets one clarifying question before any employee data is read.
 
 ## Why I built this
 
