@@ -56,3 +56,18 @@ jobs:
               assert fresh["sets"][name] == entry, f"{name} drifted: rerun the Model screen evaluation workflow"
           print("Replayed screen results match the committed report.")
           PY
+
+  optional-dependencies:
+    name: Verify optional SDK dependencies
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+      - name: Bootstrap pip with the verified security release
+        run: python -m pip install --require-hashes --no-deps -r requirements-bootstrap.txt
+      - run: python -m pip install -r requirements-optional-lock.txt
+      - run: python -m pip check
+      - name: Verify certificate bundle and optional SDK imports
+        run: python -c "import certifi, anthropic, mcp_server; assert tuple(map(int, certifi.__version__.split('.'))) >= (2026, 10, 19)"
