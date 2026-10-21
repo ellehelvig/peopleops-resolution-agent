@@ -3,3 +3,6 @@ mcp>=1.12,<2
 
 # Optional model screen (peopleops/screen.py) and the screen evaluation
 anthropic>=1.11,<2
+
+# Minimum CA bundle after the October 2026 eMudhra incident.
+certifi>=2026.10.19
