@@ -12,8 +12,22 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/ellehelvig/peopleops-resolution-agent/actions/workflows/quality.yml"><img alt="Tests" src="https://img.shields.io/github/actions/workflow/status/ellehelvig/peopleops-resolution-agent/quality.yml?branch=main&style=flat-square&label=tests"></a>
+  <a href="https://github.com/ellehelvig/peopleops-resolution-agent/actions/workflows/quality.yml"><img alt="Tests: current main CI status" src="https://img.shields.io/github/actions/workflow/status/ellehelvig/peopleops-resolution-agent/quality.yml?branch=main&amp;style=flat-square&amp;label=tests"></a>
+  <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-5140b5?style=flat-square"></a>
+  <a href="#run-locally"><img alt="Runtime requirement: Python 3.11 or later" src="https://img.shields.io/badge/Python-3.11%2B-086779?style=flat-square"></a>
+  <a href="#current-status"><img alt="Status: experimental; production use is withheld" src="https://img.shields.io/badge/status-experimental-5140b5?style=flat-square"></a>
 </p>
+
+<br>
+
+## At a glance
+
+| Aspect | Summary |
+|:--|:--|
+| **Purpose** | A synthetic demonstration of HR request routing and human review. |
+| **Try it** | [Browser demo](https://ellehelvig.github.io/peopleops-resolution-agent/) or [local setup](#run-locally). |
+| **Evidence** | [Preserved results and caveats](docs/evaluation-results.md), including failure results. |
+| **Status** | Experimental prototype. Production use is withheld. |
 
 <br>
 
@@ -79,7 +93,7 @@ Candidate ranking, performance ratings, compensation recommendations, discipline
 ## Technical setup and evidence
 
 <details>
-<summary>Open local setup, optional integrations, and repository map</summary>
+<summary><strong>Local setup, optional integrations, and repository map</strong></summary>
 
 ### Run locally
 
