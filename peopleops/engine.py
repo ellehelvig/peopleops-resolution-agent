@@ -18,7 +18,13 @@ INTENTS = {
     "relocation": ("relocat", "move to", "move me to", "moving to", "transfer countr"),
     "manager_change": ("manager change", "new manager", "reporting line", "change manager", "change my manager", "supervisor"),
 }
-INJECTION = ("ignore previous", "system prompt", "developer message", "reveal instructions", "bypass", "jailbreak", "act as root")
+INJECTION = ("ignore previous", "system prompt", "developer message", "reveal instructions", "jailbreak", "act as root")
+# This narrow keyword rule is for the deterministic demo, not a general semantic injection detector.
+BYPASS_SAFEGUARD = re.compile(
+    r"\bbypass\s+(?:(?:the|a|an)\s+)?"
+    r"(?:safety\s+checks?|security\s+controls?|approval\s+gates?|validation|"
+    r"permissions?|polic(?:y|ies)|rules?|authentication|authorization)\b"
+)
 SENSITIVE = ("medical record", "diagnosis", "salary", "social security", "ssn", "bank account", "home address")
 ER_TERMS = ("harass", "retaliat", "discriminat", "unsafe", "protected characteristic", "whistleblow")
 LEGAL_TERMS = ("lawsuit", "attorney", "legal claim", "subpoena", "illegal")
@@ -61,7 +67,7 @@ class ResolutionEngine:
         normalized = " ".join(request.lower().split())
         trace = ["Accepted request through employee self-service channel."]
 
-        if any(term in normalized for term in INJECTION):
+        if any(term in normalized for term in INJECTION) or BYPASS_SAFEGUARD.search(normalized):
             return self._finish(case_id, "refused", "unknown", "critical", "safety rule: prompt injection",
                 "I can’t follow instructions that attempt to override security or expose internal configuration. I can still help with an HR policy question.",
                 "Log the security event; take no HR action.", False, None, [], trace + ["Detected prompt-injection pattern; stopped before tool access."], [], started, ["prompt_injection"])
