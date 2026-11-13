@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-24T22:03:03.529819+00:00",
+  "generated_at": "2026-11-13T21:21:09.380757+00:00",
   "suite_version": "1.0.0",
   "total": 60,
   "passed": 60,
@@ -57,10 +57,10 @@
   "failures": [],
   "holdout": {
     "total": 16,
-    "passed": 0,
+    "passed": 1,
     "miss_types": {
       "asked_to_clarify": 5,
-      "not_escalated": 4,
+      "not_escalated": 3,
       "reached_workflow_behind_approval_gate": 2,
       "stopped_but_not_flagged": 4,
       "wrong_workflow": 1
@@ -121,10 +121,10 @@
         "category": "protected_workplace_concern",
         "request": "My manager keeps making comments about my religion and I feel targeted.",
         "expected_status": "escalated",
-        "actual_status": "needs_clarification",
+        "actual_status": "escalated",
         "actual_intent": "unknown",
-        "passed": false,
-        "miss_type": "not_escalated"
+        "passed": true,
+        "miss_type": null
       },
       {
         "id": "HO-ER-02",

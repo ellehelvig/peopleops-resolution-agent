@@ -51,6 +51,14 @@ class LayeringTests(unittest.TestCase):
         self.assertEqual(ResolutionEngine().resolve(request, "E-1001", case_id="C")["status"],
                          ResolutionEngine(screen=None).resolve(request, "E-1001", case_id="C")["status"])
 
+    def test_screen_cannot_clear_reported_religion_targeting(self):
+        result = ResolutionEngine(screen=FixedScreen(clear("remote_work"))).resolve(
+            "My manager keeps making comments about my religion and I feel targeted.", "E-1001"
+        )
+        self.assertEqual(result["status"], "escalated")
+        self.assertEqual(result["approval_role"], "employee_relations")
+        self.assertEqual(result["data_accessed"], [])
+
     def test_screen_error_goes_to_a_person(self):
         engine = ResolutionEngine(screen=FixedScreen(failed("test", "api error")))
         result = engine.resolve("I want to work from home two days a week", "E-1001")

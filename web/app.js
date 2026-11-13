@@ -252,12 +252,12 @@
 
     var ho = ev.holdout;
     if (!ho) return;
-    box.appendChild(el('h3', null, 'Held-out cases'));
+    box.appendChild(el('h3', null, 'Known paraphrase regressions'));
     box.appendChild(el('p', 'muted small', 'Original held-out result: 0/16. Production use is withheld because critical concerns were missed. ' +
-      'Once used for development these cases become regression evidence; a redesign needs new unseen tests of harmful misses and excessive escalation.'));
+      'The current count below includes narrow fixes on these known cases; a redesign needs new unseen tests of harmful misses and excessive escalation.'));
     var hgrid = el('div', 'metrics');
     var htile = el('div', 'metric');
-    htile.appendChild(el('div', 'label', 'Held-out pass rate'));
+    htile.appendChild(el('div', 'label', 'Current known-case passes'));
     htile.appendChild(el('div', 'value', ho.passed + '/' + ho.total));
     hgrid.appendChild(htile);
     Object.keys(ho.miss_types || {}).forEach(function (k) {

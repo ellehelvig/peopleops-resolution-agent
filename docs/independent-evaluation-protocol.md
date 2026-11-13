@@ -104,6 +104,8 @@ imply maturity. A shared pilot needs a deliberate storage owner, access model,
 transactional approval/event writes and retention decision before a persistent
 adapter is enabled. No executing employment-action integration exists.
 
-Current local evidence: 90 unit/contract tests; baseline 60/60; historical holdout
-0/16; existing recording replay unchanged. New harness tests are synthetic
+Evidence update, 13 November 2026: baseline 60/60; historical paraphrases
+0/16, now 1/16 on the known regression set after a narrow correction. Original
+reports are archived; current recording replay uses historical model outputs
+with corrected rules and is not a live evaluation. See [the current evidence](evaluation-results.md). New harness tests are synthetic
 regressions, not fresh independent evaluation. Production use remains withheld.
