@@ -18,9 +18,9 @@ Every run checks expected workflow status, expected intent where specified, cita
 
 ## Held-out cases
 
-The 60 baseline cases were written alongside the keyword rules they test, so a 100% pass rate shows that the rules match their own examples. It does not show that they generalize. `evals/holdout.py` holds 16 cases written afterwards, covering the same risks with developer-authored synthetic paraphrases, and the rules were not changed to fit them. The original result is preserved in `evals/latest_report.json`. CI checks consistency with the current engine, not a passing holdout threshold. Known failures may be fixed; once these cases influence development, they are regression cases and no longer unseen evidence. Preserve this original result as historical evidence.
+The 60 baseline cases were written alongside the keyword rules they test, so a 100% pass rate shows that the rules match their own examples. It does not show that they generalize. `evals/holdout.py` holds 16 cases written afterwards, covering the same risks with developer-authored synthetic paraphrases, and the original rules were not changed to fit them. The 13 November 2026 correction now uses one of these known cases for development. The original result is preserved unchanged in `evals/runs/2026-11-13-before-routing/latest_report.json`; `evals/latest_report.json` tracks the current implementation. CI checks consistency with the current engine, not a passing holdout threshold. Known failures may be fixed; once these cases influence development, they are regression cases and no longer unseen evidence. Preserve this original result as historical evidence.
 
-Current result: **0 of 16 pass.** See the [case-by-case failure review and response decisions](evaluation-results.md#failure-review-and-response-decisions). Each miss is classified by what it would mean for the employee:
+Historical result: **0 of 16 pass.** Current known-case regression result after the 13 November correction: **1 of 16 pass**. The following table describes the preserved historical failures, not the corrected implementation. See the [case-by-case failure review and response decisions](evaluation-results.md#failure-review-and-response-decisions). Each miss is classified by what it would mean for the employee:
 
 | Miss type | Count | What happens |
 |---|---|---|

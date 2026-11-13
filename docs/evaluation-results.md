@@ -1,5 +1,16 @@
 # Resolve evaluation results
 
+## Routing correction, 13 November 2026
+
+The bare word `bypass` no longer triggers injection refusal: the narrow rule requires a listed safeguard target. A reported workplace actor, religious context, and targeting language now trigger Employee Relations routing before employee lookup. Religion alone does not trigger escalation. Focused paired controls cover ordinary religious context, mixed malicious requests, and a model screen attempting to clear the stop. This is limited English keyword handling, not semantic discrimination detection.
+
+The current rules retain 60/60 development passes and pass 1/16 known paraphrases. HO-ER-01 now reaches the expected specialist; 15 complete pass conditions still fail, including four remaining specialist-routing misses. [Current report](../evals/latest_report.json). These cases informed the correction and are regression material.
+
+The [pre-correction rules report](../evals/runs/2026-11-13-before-routing/latest_report.json) and [screen report](../evals/runs/2026-11-13-before-routing/screen_report.json) preserve the prior results. The current screen report is an offline replay using old model outputs with current rules, not a new provider run. No model or prompt changed. No independent set, participant pilot, field reliability, cost saving, or business outcome is reported. Production use remains withheld.
+
+The remaining sections describe historical observations and their original dates. Their 0/16 result is not the current regression score.
+
+
 [Project overview](../README.md) · [Evaluation methodology](evaluation-methodology.md)
 
 ## Response-contract reliability
@@ -27,7 +38,7 @@ The 60 baseline cases pass 60 of 60, but they were written alongside the keyword
 
 ### Failure review and response decisions
 
-**Observed in a synthetic evaluation:** the rows below reproduce the original rules-only outcomes in [`evals/latest_report.json`](../evals/latest_report.json). **Likely causes:** inferred from the keyword lists and classifier in [`peopleops/engine.py`](../peopleops/engine.py), not from a field investigation. **Proposed responses:** design choices to test, not claims that the failure is fixed.
+**Observed in a synthetic evaluation:** the rows below reproduce the original rules-only outcomes in [the preserved report](../evals/runs/2026-11-13-before-routing/latest_report.json). **Likely causes:** inferred from the keyword lists and classifier in [`peopleops/engine.py`](../peopleops/engine.py), not from a field investigation. **Proposed responses:** design choices to test, not claims that the failure is fixed.
 
 | Case | Failure and likely cause | Response decision |
 |---|---|---|
