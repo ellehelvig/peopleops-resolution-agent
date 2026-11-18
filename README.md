@@ -1,24 +1,27 @@
 # Resolve
 
-A synthetic HR request workflow for People Operations and HR transformation leaders.
-It matches known phrases to fictional policies, prepares fixed-template responses, and pauses recommendations for simulated human review.
+A fictional HR request workflow that matches requests to policies, prepares a response, and pauses it for human review. I built it to find where automation in People Operations should stop and a person should take over.
 
-[Try the demo](https://ellehelvig.github.io/peopleops-resolution-agent/) · [Results and limits](docs/evaluation-results.md) · [Tests](https://github.com/ellehelvig/peopleops-resolution-agent/actions/workflows/quality.yml) · [How it works](TECHNICAL-WALKTHROUGH.md)
+[Try the demo](https://ellehelvig.github.io/peopleops-resolution-agent/) · [Executive case study](docs/case-study.md) · [Results and limits](docs/evaluation-results.md) · [How it works](TECHNICAL-WALKTHROUGH.md) · [Tests](https://github.com/ellehelvig/peopleops-resolution-agent/actions/workflows/quality.yml)
 
-**Experimental prototype. Production use is withheld.** The default demo uses rules, not a language model. Review identities are self-reported, history is temporary, and no employment action is executed.
+![Synthetic parental-leave result with pending human review](docs/assets/current-synthetic-result.png)
 
-## Results: passing tests do not mean reliable HR routing
+## What I found
+
+Keyword rules passed every case written alongside them, then broke on paraphrased requests. That gap is why Resolve stays on a production hold.
 
 | Rules-only evaluation | Result | What it shows |
 |---|---:|---|
 | Developer-written regression cases | **60/60 passed** | The rules match familiar cases written alongside them. |
 | Historical developer-written paraphrases | **0/16 passed originally; 1/16 after the 13 November correction** | Known cases now used as regression evidence; 15 failures remain. |
 
-The original 0/16 report is preserved unchanged in [the pre-correction archive](evals/runs/2026-11-13-before-routing/latest_report.json). The current rules pass 1/16 after a narrow workplace-targeting correction; this is development on a known case, not independent improvement evidence. Some requests stop safely but miss the expected label; other cases miss specialist routing or reach a routine workflow. These are test outcomes, not a field accuracy or employee-harm rate. A later human review step does not repair a missed specialist referral.
+Some requests stop safely but miss the expected label; others miss specialist routing or reach a routine workflow. A later human review step does not repair a missed specialist referral. These are test outcomes, not a field accuracy or employee-harm rate. The original 0/16 report is preserved unchanged in [the pre-correction archive](evals/runs/2026-11-13-before-routing/latest_report.json); the 1/16 is development on a known case, not independent improvement evidence.
 
-**Next:** test proposed routing changes, record fresh repeated model-screen runs, and evaluate a new practitioner-written private set under the [independent evaluation protocol](docs/independent-evaluation-protocol.md). Keep the production hold until the [acceptance criteria](docs/evaluation-methodology.md#acceptance-criteria-for-redesigned-routing) and separate access, privacy, and storage prerequisites are met. The optional screen's existing recordings do not establish that the current prompt resolves these failures.
+**Next:** test proposed routing changes, record fresh repeated model-screen runs, and evaluate a new practitioner-written private set under the [independent evaluation protocol](docs/independent-evaluation-protocol.md). The production hold stays until the [acceptance criteria](docs/evaluation-methodology.md#acceptance-criteria-for-redesigned-routing) and separate access, privacy, and storage prerequisites are met. The optional screen's existing recordings do not show that the current prompt resolves these failures.
 
-[Executive case study](docs/case-study.md) · [Practitioner pilot kit](docs/practitioner-pilot-kit.md) · [Architecture comparison and measurement plan](docs/architecture-comparison.md)
+[Practitioner pilot kit](docs/practitioner-pilot-kit.md) · [Architecture comparison and measurement plan](docs/architecture-comparison.md)
+
+**Experimental prototype.** The default demo uses rules, not a language model. Review identities are self-reported, history is temporary, and no employment action is executed.
 
 ## Try one fictional request
 
@@ -26,8 +29,6 @@ The original 0/16 report is preserved unchanged in [the pre-correction archive](
 2. Inspect the fictional policy citation, fields accessed, routing basis, and pending-review state.
 3. Approve or reject with a typed reviewer name. This shows state transitions, not authenticated authorization.
 4. Try a known injection example, then compare the [published failure cases](docs/evaluation-results.md#failure-review-and-response-decisions).
-
-![Synthetic parental-leave result with pending human review](docs/assets/current-synthetic-result.png)
 
 ## Run locally
 
